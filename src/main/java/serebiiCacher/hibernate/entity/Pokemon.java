@@ -12,10 +12,6 @@ import javax.persistence.Table;
 public class Pokemon {
 	
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
-
     @Column(name = "name")
     private String pokeName;
 
@@ -122,12 +118,15 @@ public class Pokemon {
     public Pokemon() {
 
     }
+    
+    public Pokemon(String pokeName) {
+    	
+    }
 
-	public Pokemon(int id, String pokeName, String pokeTypes, String abilities, String levelMoves, String tmMoves,
+	public Pokemon(String pokeName, String pokeTypes, String abilities, String levelMoves, String tmMoves,
 			String reminderMoves, String eggMoves, String totalMoves, int baseHP, int baseAtk, int baseDef,
 			int baseSpAtk, int baseSpDef, int baseSpd) {
 		super();
-		this.id = id;
 		this.pokeName = pokeName;
 		this.pokeTypes = pokeTypes;
 		this.abilities = abilities;
@@ -142,14 +141,6 @@ public class Pokemon {
 		this.baseSpAtk = baseSpAtk;
 		this.baseSpDef = baseSpDef;
 		this.baseSpd = baseSpd;
-	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
 	}
 
 	public String getPokeName() {

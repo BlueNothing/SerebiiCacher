@@ -1,9 +1,5 @@
 package serebiiCacher.hibernate.entity;
 
-/*
- * No idea why these imports aren't sticking... no sense in worrying right now, I suppose.
- */
-
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
