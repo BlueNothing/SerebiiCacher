@@ -1,4 +1,4 @@
-package serebiiCacher.hibernate.entity;
+package hibernate;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;

@@ -1,1 +1,0 @@
-package serebiiCacher.hibernate.entity;

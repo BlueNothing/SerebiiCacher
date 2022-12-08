@@ -1,9 +1,11 @@
-package serebiiCacher.hibernate.entity;
+package hibernate;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "moves")
@@ -75,17 +77,13 @@ public class Move {
 	@Column(name="isGravityAffected")
 	private boolean isGravityAffected;
 	
-	@Column(name="isReflectable");
+	@Column(name="isReflectable")
 	private boolean isReflectable;
 	
 	@Column(name="isBlockable")
-	private int isBlockable;
+	private boolean isBlockable;
 	
 	@Column(name="isCopyable")
-	private                     
-	
-	@Column(name =) //Revise this one more closely.
-	/*isReflectable, isBlockable, isCopyablets
-	 */
+	private boolean isCopyable;
 
 }

@@ -1,4 +1,4 @@
-package serebiiCacher.hibernate.entity;
+package hibernate;
 
 public enum Type {
 	NORMAL,
