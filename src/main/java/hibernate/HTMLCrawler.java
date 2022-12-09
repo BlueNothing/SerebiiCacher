@@ -12,6 +12,14 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 public class HTMLCrawler {
+	/*
+	 * Refactor this class to include ~7 methods.
+	 * dexFinder: Given nothing, pull the names of the Pokemon in the Paldea Pokedex, add them to the database as stubs if not present. This method will be adapted to add any Pokemon to the database.
+	 * dexFiller: Scrolls through the database, populating null fields with values where appropriate (using 0 when a value has been searched but is empty or absent).
+	 * abilityFinder: Given nothing, pulls the names of the abilities in Serebii's AbilityDex, adding them to the database as stubs if not present.
+	 * abilityFiller: Scrolls through the database, populating null fields and filling stubs for the AblityDex.
+	 * 
+	 */
 	public static void main(String[] args) throws IOException {
 		Document palDex = Jsoup.connect("https://www.serebii.net/pokedex-sv/").get();
 		String palDexTitle = palDex.title();
@@ -78,12 +86,48 @@ public class HTMLCrawler {
 		for(TextNode x : abilities) {
 				if(!(x.text().startsWith("AbilityDex"))) {
 					abilitiesDexOverall.add(x.text());
+					System.out.println(x.text());
 		}
 		}
-	for(String s : abilitiesDexOverall) {
-		System.out.println(s);
-	}
-	}
 	
-	
+		System.out.println("Outputting sample ability test.");
+		Ability testAbility = new Ability("Adaptability");
+		String abilityName = "Zen Mode";
+		abilityName = abilityName.toLowerCase().replace("%20", "").replace(" ", "");
+		//The code now effectively connects to the webpage for most abilities.
+		System.out.println(("https://www.serebii.net/abilitydex/" + abilityName + ".shtml"));
+		/*
+		 * https://www.serebii.net/abilitydex/adaptability.shtml
+		 * https://www.serebii.net/abilitydex/adaptability.shtml
+		 */
+		Document abilityDoc = Jsoup.connect(("https://www.serebii.net/abilitydex/" + abilityName.toLowerCase() + ".shtml")).get();
+		Elements abilityData = abilityDoc.select(".fooinfo");
+		//System.out.println(abilityData.text().toString());
+		List<String> abilityDataText = abilityData.eachText();
+		String inGameText, inDepthEffect, overworldEffect = null;
+		/*
+		 * The following strategy looks like it should be fine, but runs into unexpected edge cases like Palafin in current implementation.
+		 */
+		if((!abilityDataText.get(0).startsWith("#"))) {
+			inGameText = abilityDataText.get(0);
+		}
+		else {
+			inGameText = "0";
+		}
+		if((!abilityDataText.get(1).startsWith("#"))) {
+			inDepthEffect = abilityDataText.get(1);
+		}
+		else {
+			inDepthEffect = "0";
+		}
+		if((!abilityDataText.get(2).startsWith("#"))) {
+			overworldEffect = abilityDataText.get(2);
+		}
+		else {
+			overworldEffect = "0";
+		}
+		System.out.println(inGameText);
+		System.out.println(inDepthEffect);
+		System.out.println(overworldEffect);
+	}
 }
