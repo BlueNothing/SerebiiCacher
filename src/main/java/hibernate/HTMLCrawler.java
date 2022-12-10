@@ -18,9 +18,12 @@ public class HTMLCrawler {
 	 * dexFiller: Scrolls through the database, populating null fields with values where appropriate (using 0 when a value has been searched but is empty or absent).
 	 * abilityFinder: Given nothing, pulls the names of the abilities in Serebii's AbilityDex, adding them to the database as stubs if not present.
 	 * abilityFiller: Scrolls through the database, populating null fields and filling stubs for the AblityDex.
-	 * 
+	 * attackFinder: Given nothing, pulls the names of the attacks in Serebii's AttackDex, adding them to the database as stubs.
+	 * attackFiller: Scrolls through the database, populating null fields and filling stubs for the AttackDex.
+	 * main: Calls these methods.
 	 */
-	public static void main(String[] args) throws IOException {
+	
+	public static void dexFinder() throws IOException {
 		Document palDex = Jsoup.connect("https://www.serebii.net/pokedex-sv/").get();
 		String palDexTitle = palDex.title();
 		Elements palDexElems1 = palDex.select("content > main > div:nth-child(4) > table:nth-child(2) > tbody > tr > td:nth-child(1) > form");
@@ -56,25 +59,15 @@ public class HTMLCrawler {
 		System.out.println(s);
 	}
 		//form name ="cent", "coast", "mount", need to read off all the entries from those 'select' forms.
-		
-		
-		Document gen9AtkDex = Jsoup.connect("https://www.serebii.net/attackdex-sv/").get();
-		String gen9AtkDexTitle = gen9AtkDex.title();
-		Elements AtkDex = gen9AtkDex.select("option");
-		List<TextNode> attacks = AtkDex.textNodes();
-		System.out.println(AtkDex.eachText());
-		ArrayList<String> AtkDexOverall = new ArrayList<String>();
-		System.out.println("Inital attack dex data:");
-		
-		for(TextNode x : attacks) {
-				if(!(x.text().startsWith("AttackDex"))) {
-					AtkDexOverall.add(x.text());
-		}
-		}
-	for(String s : AtkDexOverall) {
-		System.out.println(s);
 	}
-		
+	
+	public static void dexFiller() throws IOException {
+		/*
+		 * Implementation pending!
+		 */
+	}
+	
+	public static void abilityFinder() throws IOException{
 		Document abiliDex = Jsoup.connect("https://www.serebii.net/abilitydex/").get();
 		String abiliDexTitle = abiliDex.title();
 		Elements abilitiesDex = abiliDex.select("option");
@@ -90,6 +83,9 @@ public class HTMLCrawler {
 		}
 		}
 	
+	}
+	
+	public static void abilityFiller() throws IOException {
 		System.out.println("Outputting sample ability test.");
 		Ability testAbility = new Ability("Adaptability");
 		String abilityName = "Zen Mode";
@@ -129,5 +125,39 @@ public class HTMLCrawler {
 		System.out.println(inGameText);
 		System.out.println(inDepthEffect);
 		System.out.println(overworldEffect);
+	}
+	
+	public static void attackFinder() throws IOException{
+		Document gen9AtkDex = Jsoup.connect("https://www.serebii.net/attackdex-sv/").get();
+		String gen9AtkDexTitle = gen9AtkDex.title();
+		Elements AtkDex = gen9AtkDex.select("option");
+		List<TextNode> attacks = AtkDex.textNodes();
+		System.out.println(AtkDex.eachText());
+		ArrayList<String> AtkDexOverall = new ArrayList<String>();
+		System.out.println("Inital attack dex data:");
+		
+		for(TextNode x : attacks) {
+				if(!(x.text().startsWith("AttackDex"))) {
+					AtkDexOverall.add(x.text());
+		}
+		}
+	for(String s : AtkDexOverall) {
+		System.out.println(s);
+	}
+	}
+	
+	public static void attackFiller() throws IOException{
+		/*
+		 * Implementation pending.
+		 */
+	}
+	
+	public static void main(String[] args) throws IOException {
+		dexFinder();
+		dexFiller();
+		abilityFinder();
+		abilityFiller();
+		attackFinder();
+		attackFiller();
 	}
 }
