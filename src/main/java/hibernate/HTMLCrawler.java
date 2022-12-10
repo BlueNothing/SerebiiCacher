@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.Session;
+import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.query.Query;
 import org.jsoup.*;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -23,7 +26,7 @@ public class HTMLCrawler {
 	 * main: Calls these methods.
 	 */
 	
-	public static void dexFinder() throws IOException {
+	public static void dexFinder(Session session) throws IOException {
 		/*
 		 * Populating the list from this table will ultimately be preferable, but for now, this is a job for a refactor.
 		Document natDex = Jsoup.connect("https://www.serebii.net/pokemon/nationalpokedex.shtml").get();
@@ -38,44 +41,54 @@ public class HTMLCrawler {
 			
 		}
 		
+		//The solution implemented below works, but could be more efficient - 
+		 * What we see here selects each entry in the current Serebii Pokedex and adds it to the list.
+		 * Notably, the current outcome relies on a few quirks in Serebii's design for the Pokedex: 
+		 * Every Pokedex entry is repeated, but only one instance of each dex entry is numbered, and outside of the Paldea dex, it's numbered with its National Dex entry.
+		 * Inside the Paldea dex, they're numbered with their local dex number.
+		 * Overall, then, there's at least one instance of every pokemon's dex entry that's prefaced with a number.
 		*/
 		
-		//This one works, but I find it crass.
 		Document palDex = Jsoup.connect("https://www.serebii.net/pokedex-sv/").get();
 		Elements palDexElems = palDex.select("option");
 		List<String> palDexData = palDexElems.eachText();
 		ArrayList<String> palDexOverall = new ArrayList<String>();
 		System.out.println("Inital Pokedex data:");
 		/*
-		 * What we see here selects each entry in the current Serebii Pokedex and adds it to the list.
-		 * Notably, the current outcome relies on a few quirks in Serebii's design for the Pokedex - 
-		 * Every Pokedex entry is repeated, but only one instance of each dex entry is numbered, and outside of the Paldea dex, it's numbered with its National Dex entry.
-		 * Inside the Paldea dex, they're numbered with their local dex number.
-		 * Overall, then, there's at least one instance of every pokemon's dex entry that's prefaced with a number.
 		 */
 	for(String s : palDexData) {
 		s = s.trim(); //Okay, so this works just fine.
-		if(Character.isDigit(s.charAt(0))) { //This doesn't, though. Need to Regex so that only entries that start with a number are tested.
+		if(Character.isDigit(s.charAt(0))) {
 			s = s.substring(4);
 			s = s.trim();
 			if(!(palDexOverall.contains(s))) {
 			palDexOverall.add(s);
-			System.out.println(s);
+			//System.out.println(s);
 			}
 	}
 	}
+	System.out.println("Dex stubs uploaded to DB.");
+	System.out.println("Testing DB contents!");
 	for(String s : palDexOverall) {
-		//TODO: Add to Pokemon DB!
+		session.beginTransaction();
+		Pokemon pokemon = new Pokemon();
+		pokemon.setPokeName(s);
+		System.out.println(pokemon.toString());
+		session.persist(pokemon);
+		session.getTransaction().commit();
 	}
+	String validatorHQL = "FROM Pokemon";
+	List results = session.createQuery(validatorHQL).list();
+	session.close();
 	}
 	
-	public static void dexFiller() throws IOException {
+	public static void dexFiller(Session session) throws IOException {
 		/*
 		 * Implementation pending!
 		 */
 	}
 	
-	public static void abilityFinder() throws IOException{
+	public static void abilityFinder(Session session) throws IOException{
 		Document abiliDex = Jsoup.connect("https://www.serebii.net/abilitydex/").get();
 		Elements abilitiesDex = abiliDex.select("option");
 		List<TextNode> abilities = abilitiesDex.textNodes();
@@ -93,7 +106,7 @@ public class HTMLCrawler {
 	
 	}
 	
-	public static void abilityFiller() throws IOException {
+	public static void abilityFiller(Session session) throws IOException {
 		System.out.println("Outputting sample ability test.");
 		Ability testAbility = new Ability("Adaptability");
 		String abilityName = "Zen Mode";
@@ -135,7 +148,7 @@ public class HTMLCrawler {
 		System.out.println(overworldEffect);
 	}
 	
-	public static void attackFinder() throws IOException{
+	public static void attackFinder(Session session) throws IOException{
 		Document gen9AtkDex = Jsoup.connect("https://www.serebii.net/attackdex-sv/").get();
 		Elements AtkDex = gen9AtkDex.select("option");
 		List<TextNode> attacks = AtkDex.textNodes();
@@ -154,23 +167,31 @@ public class HTMLCrawler {
 	}
 	}
 	
-	public static void attackFiller() throws IOException{
+	public static void attackFiller(Session session) throws IOException{
 		/*
 		 * Implementation pending.
 		 */
 	}
 	
 	public static void main(String[] args) throws IOException {
-		dexFinder();
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		session.close();
+		session = HibernateUtil.getSessionFactory().openSession();
+		dexFinder(session);
+		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
-		dexFiller();
+		dexFiller(session);
+		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
-		abilityFinder();
+		abilityFinder(session);
+		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
-		//abilityFiller();
+		//abilityFiller(session);
+		//session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
-		attackFinder();
+		attackFinder(session);
+		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
-		//attackFiller();
+		//attackFiller(session);
 	}
 }

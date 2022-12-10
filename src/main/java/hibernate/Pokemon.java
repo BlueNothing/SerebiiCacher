@@ -1,14 +1,12 @@
 package hibernate;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "pokemon")
+@Table(name = "Pokemon")
 public class Pokemon {
 	
     @Id
@@ -120,7 +118,7 @@ public class Pokemon {
     }
     
     public Pokemon(String pokeName) {
-    	
+    	this.pokeName = pokeName;
     }
 
 	public Pokemon(String pokeName, String pokeTypes, String abilities, String levelMoves, String tmMoves,
@@ -261,6 +259,15 @@ public class Pokemon {
 
 	public void setBst(int bst) {
 		this.bst = bst;
+	}
+
+	@Override
+	public String toString() {
+		return "Pokemon [pokeName=" + pokeName + ", pokeTypes=" + pokeTypes + ", abilities=" + abilities
+				+ ", levelMoves=" + levelMoves + ", tmMoves=" + tmMoves + ", reminderMoves=" + reminderMoves
+				+ ", eggMoves=" + eggMoves + ", totalMoves=" + totalMoves + ", baseHP=" + baseHP + ", baseAtk="
+				+ baseAtk + ", baseDef=" + baseDef + ", baseSpAtk=" + baseSpAtk + ", baseSpDef=" + baseSpDef
+				+ ", baseSpd=" + baseSpd + ", bst=" + bst + "]";
 	}
     
     
