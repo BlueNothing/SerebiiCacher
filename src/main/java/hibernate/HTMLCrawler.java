@@ -24,41 +24,49 @@ public class HTMLCrawler {
 	 */
 	
 	public static void dexFinder() throws IOException {
-		Document palDex = Jsoup.connect("https://www.serebii.net/pokedex-sv/").get();
-		String palDexTitle = palDex.title();
-		Elements palDexElems1 = palDex.select("content > main > div:nth-child(4) > table:nth-child(2) > tbody > tr > td:nth-child(1) > form");
-		palDexElems1 = palDexElems1.select("option");
-		List<TextNode> pokemon1 = palDexElems1.textNodes();
-		System.out.println(palDexElems1.eachText());
-		Elements palDexElems2 = palDex.select("content > main > div:nth-child(4) > table:nth-child(2) > tbody > tr > td:nth-child(2) > form");
-		List<TextNode> pokemon2 = palDexElems2.textNodes();
-		System.out.println(palDexElems2.eachText());
-		Elements palDexElems3 = palDex.select("content > main > div:nth-child(4) > table:nth-child(2) > tbody > tr > td:nth-child(3) > form");
-		List<TextNode> pokemon3 = palDexElems3.textNodes();
-		System.out.println(palDexElems3.eachText());
+		/*
+		 * Populating the list from this table will ultimately be preferable, but for now, this is a job for a refactor.
+		Document natDex = Jsoup.connect("https://www.serebii.net/pokemon/nationalpokedex.shtml").get();
+		Elements natDexTable = natDex.select("content > main > table");
+		Elements rows = natDexTable.select("tr");
+		ArrayList<String> natDexOverall = new ArrayList<String>();
+		for(int i = 2; i < rows.size(); i++) {
+			Element row = rows.get(i);
+			Elements cols = row.select("td");
+			System.out.println(cols.get(2).text());
+			natDexOverall.add(cols.get(2).text());
+			
+		}
 		
+		*/
+		
+		//This one works, but I find it crass.
+		Document palDex = Jsoup.connect("https://www.serebii.net/pokedex-sv/").get();
+		Elements palDexElems = palDex.select("option");
+		List<String> palDexData = palDexElems.eachText();
 		ArrayList<String> palDexOverall = new ArrayList<String>();
 		System.out.println("Inital Pokedex data:");
-		
-		for(TextNode x : pokemon1) {
-				if(!(x.text().startsWith("Poké"))) {
-					palDexOverall.add(x.text());
-		}
-		}
-		for(TextNode x : pokemon2) {
-			if(!(x.text().startsWith("Poké"))) {
-				palDexOverall.add(x.text());
-	}
-	}
-		for(TextNode x : pokemon3) {
-			if(!(x.text().startsWith("Poké"))) {
-				palDexOverall.add(x.text());
+		/*
+		 * What we see here selects each entry in the current Serebii Pokedex and adds it to the list.
+		 * Notably, the current outcome relies on a few quirks in Serebii's design for the Pokedex - 
+		 * Every Pokedex entry is repeated, but only one instance of each dex entry is numbered, and outside of the Paldea dex, it's numbered with its National Dex entry.
+		 * Inside the Paldea dex, they're numbered with their local dex number.
+		 * Overall, then, there's at least one instance of every pokemon's dex entry that's prefaced with a number.
+		 */
+	for(String s : palDexData) {
+		s = s.trim(); //Okay, so this works just fine.
+		if(Character.isDigit(s.charAt(0))) { //This doesn't, though. Need to Regex so that only entries that start with a number are tested.
+			s = s.substring(4);
+			s = s.trim();
+			if(!(palDexOverall.contains(s))) {
+			palDexOverall.add(s);
+			System.out.println(s);
+			}
 	}
 	}
 	for(String s : palDexOverall) {
-		System.out.println(s);
+		//TODO: Add to Pokemon DB!
 	}
-		//form name ="cent", "coast", "mount", need to read off all the entries from those 'select' forms.
 	}
 	
 	public static void dexFiller() throws IOException {
@@ -69,7 +77,6 @@ public class HTMLCrawler {
 	
 	public static void abilityFinder() throws IOException{
 		Document abiliDex = Jsoup.connect("https://www.serebii.net/abilitydex/").get();
-		String abiliDexTitle = abiliDex.title();
 		Elements abilitiesDex = abiliDex.select("option");
 		List<TextNode> abilities = abilitiesDex.textNodes();
 		System.out.println(abilitiesDex.eachText());
@@ -80,6 +87,7 @@ public class HTMLCrawler {
 				if(!(x.text().startsWith("AbilityDex"))) {
 					abilitiesDexOverall.add(x.text());
 					System.out.println(x.text());
+					//TODO: Add to Ability DB!
 		}
 		}
 	
@@ -129,7 +137,6 @@ public class HTMLCrawler {
 	
 	public static void attackFinder() throws IOException{
 		Document gen9AtkDex = Jsoup.connect("https://www.serebii.net/attackdex-sv/").get();
-		String gen9AtkDexTitle = gen9AtkDex.title();
 		Elements AtkDex = gen9AtkDex.select("option");
 		List<TextNode> attacks = AtkDex.textNodes();
 		System.out.println(AtkDex.eachText());
@@ -143,6 +150,7 @@ public class HTMLCrawler {
 		}
 	for(String s : AtkDexOverall) {
 		System.out.println(s);
+		//TODO: Add to Move DB!
 	}
 	}
 	
@@ -154,10 +162,15 @@ public class HTMLCrawler {
 	
 	public static void main(String[] args) throws IOException {
 		dexFinder();
+		System.out.println("\n \n \n");
 		dexFiller();
+		System.out.println("\n \n \n");
 		abilityFinder();
-		abilityFiller();
+		System.out.println("\n \n \n");
+		//abilityFiller();
+		System.out.println("\n \n \n");
 		attackFinder();
-		attackFiller();
+		System.out.println("\n \n \n");
+		//attackFiller();
 	}
 }
