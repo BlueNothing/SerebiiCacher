@@ -83,5 +83,8 @@ public class Move {
 	
 	@Column(name="isCopyable")
 	private boolean isCopyable;
+	
+	@Column(name="learnset")
+	private String learnset;
 
 }

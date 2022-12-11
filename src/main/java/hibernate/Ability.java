@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 public class Ability {
 	/*
 	 * NAME, GAME TEXT, IN-DEPTH EFFECT;
+	 * Possibly add an element for affectedMoves, but this one is more of a 'later development' feature.
 	 */
 
 	@Id

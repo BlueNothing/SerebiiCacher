@@ -71,7 +71,7 @@ public class HTMLCrawler {
 	System.out.println("Testing DB contents!");
 	for(String s : palDexOverall) {
 		
-		Pokemon dbSample = (Pokemon) session.get(Pokemon.class, s);
+		Pokemon dbSample = session.get(Pokemon.class, s);
 		Pokemon pokemon = new Pokemon();
 		pokemon.setPokeName(s);
 		if (dbSample.getPokeName().equals(pokemon.getPokeName()) && dbSample.equals(pokemon)) {
@@ -84,13 +84,37 @@ public class HTMLCrawler {
 	}
 	}
 	String validatorHQL = "FROM Pokemon";
-	List results = session.createQuery(validatorHQL).list();
+	List<Pokemon> results = session.createQuery(validatorHQL).list();
 	results.forEach(outcome -> System.out.println(outcome));
 	session.close();
 	}
 	
 	public static void dexFiller(Session session) throws IOException {
-		
+		String validatorHQL = "FROM Pokemon";
+		List<Pokemon> results = session.createQuery(validatorHQL).list();
+		for (Pokemon poke : results) {
+			String pokeName = poke.getPokeName(); //Working on this part to dynamically fill the dex!
+			String URL = "https://www.serebii.net/pokedex-sv/" + pokeName.toLowerCase().replace("%20", "").replace(" ", "") + "/"; //Builds the URLs correctly!
+			Document dexEntry = Jsoup.connect((URL)).get();
+			//TYPES in HREFS here: #content > main > div:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(2) > td.cen
+			//Row contains Classification, Height, Weight, Capture Rate, Base Egg Steps: #content > main > div:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(4)
+			//Abilities here: #content > main > div:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(2)
+			//EV data here: #content > main > div:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(4) > td:nth-child(3)
+			//BST and Stats here: #content > main > div:nth-child(2) > table:nth-child(23) > tbody > tr:nth-child(3)
+			/*
+			 * This table contains Level-Up Moves: #content > main > div:nth-child(2) > table:nth-child(18) > tbody
+			 * TM Moves: #content > main > div:nth-child(2) > table:nth-child(20) > tbody
+			 * Egg Moves: #content > main > div:nth-child(2) > table:nth-child(21)
+			 * OTHER Moves: 
+			 * Search for things structured like Moves (Things where the second row, first column of the table is "Attack Name");
+			 * Once found, add every instance.
+			 * How do we want to handle the move lists?
+			 * Current implementation calls for moves stored as Strings (for their names). Probably best to do this.
+			 * Best to one-to-many relation moves to the pokemon who can learn them.
+			 * 
+			 * 
+			 */
+		}
 		/*
 		 * Implementation pending!
 		 */
@@ -116,44 +140,59 @@ public class HTMLCrawler {
 	
 	public static void abilityFiller(Session session) throws IOException {
 		System.out.println("Outputting sample ability test.");
-		Ability testAbility = new Ability("Adaptability");
-		String abilityName = "Zen Mode";
-		abilityName = abilityName.toLowerCase().replace("%20", "").replace(" ", "");
+		Ability localAbility = new Ability();
+		String validatorHQL = "FROM Ability";
+		List<Ability> results = session.createQuery(validatorHQL).list();
+		for (Ability ability : results) {
+			localAbility.setAbilityName(ability.getAbilityName()); //Working on this part to dynamically fill the dex!
+			String abilityName = localAbility.getAbilityName().toLowerCase().replace("%20", "").replace(" ", "");
+			String URL = "https://www.serebii.net/abilitydex/" + abilityName + ".shtml";
+			Document abilityDoc = Jsoup.connect((URL)).get();
 		//The code now effectively connects to the webpage for most abilities.
-		System.out.println(("https://www.serebii.net/abilitydex/" + abilityName + ".shtml"));
 		/*
-		 * https://www.serebii.net/abilitydex/adaptability.shtml
-		 * https://www.serebii.net/abilitydex/adaptability.shtml
+		 * Strategy:
+		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(3) > td" holds the String "Game's Text:" in its text field...
+		 * Populate "content > main > table:nth-child(5) > tbody > tr:nth-child(4) > td" to inGameText.
+		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(5) > td" holds "In-Depth Effect:"...
+		 * Populate "content > main > table:nth-child(5) > tbody > tr:nth-child(6) > td" to inDepthEffect.
+		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(7) > td" holds "Attacks Effected"...
+		 * SKIP FOR NOW, NYI.
+		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(7) > td" holds "Overworld Effect:"...
+		 * Populate "content > main > table:nth-child(5) > tbody > tr:nth-child(8) > td" to overworldEffect.
 		 */
-		Document abilityDoc = Jsoup.connect(("https://www.serebii.net/abilitydex/" + abilityName.toLowerCase() + ".shtml")).get();
-		Elements abilityData = abilityDoc.select(".fooinfo");
-		//System.out.println(abilityData.text().toString());
-		List<String> abilityDataText = abilityData.eachText();
 		String inGameText, inDepthEffect, overworldEffect = null;
+		if(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(3) > td").text().startsWith("Game's Text")) {
+			inGameText = abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(4) > td").text();
+			localAbility.setAbilityGameText(inGameText);
+			System.out.println("Updating In-Game Text!");
+		} else {
+			inGameText = "0";
+		}
+		if(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(5) > td").text().startsWith("In-Depth Effect")) {
+			inDepthEffect = abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(6) > td").text();
+			localAbility.setInDepthAbilityEffect(inDepthEffect);
+			System.out.println("Updating In-Depth Effect!");
+		} else {
+			inDepthEffect = "0";
+		}
+		if(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(7) > td").text().startsWith("Overworld Effect")) {
+			overworldEffect = abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(8) > td").text();
+			localAbility.setOverworldEffect(overworldEffect);
+			System.out.println("Updating Overworld Effect!");
+		} else {
+			overworldEffect = "0";
+		}
+		if(!(ability.equals(localAbility))) {
+			session.beginTransaction();
+			session.persist(localAbility);
+			session.getTransaction().commit();
+		}
+		}
+		//Elements abilityData = abilityDoc.select(".fooinfo");
+		//System.out.println(abilityData.text().toString());
 		/*
 		 * The following strategy looks like it should be fine, but runs into unexpected edge cases like Palafin in current implementation.
 		 */
-		if((!abilityDataText.get(0).startsWith("#"))) {
-			inGameText = abilityDataText.get(0);
-		}
-		else {
-			inGameText = "0";
-		}
-		if((!abilityDataText.get(1).startsWith("#"))) {
-			inDepthEffect = abilityDataText.get(1);
-		}
-		else {
-			inDepthEffect = "0";
-		}
-		if((!abilityDataText.get(2).startsWith("#"))) {
-			overworldEffect = abilityDataText.get(2);
-		}
-		else {
-			overworldEffect = "0";
-		}
-		System.out.println(inGameText);
-		System.out.println(inDepthEffect);
-		System.out.println(overworldEffect);
 	}
 	
 	public static void attackFinder(Session session) throws IOException{
@@ -184,6 +223,7 @@ public class HTMLCrawler {
 	public static void main(String[] args) throws IOException {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.close();
+		/*
 		session = HibernateUtil.getSessionFactory().openSession();
 		dexFinder(session);
 		session = HibernateUtil.getSessionFactory().openSession();
@@ -191,15 +231,18 @@ public class HTMLCrawler {
 		dexFiller(session);
 		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
+		*/
 		abilityFinder(session);
 		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
-		//abilityFiller(session);
-		//session = HibernateUtil.getSessionFactory().openSession();
+		abilityFiller(session);
+		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
+		/*
 		attackFinder(session);
 		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
-		//attackFiller(session);
+		attackFiller(session);
+		 */
 	}
 }

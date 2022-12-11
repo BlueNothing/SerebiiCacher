@@ -18,41 +18,29 @@ public class Pokemon {
     @Column(name = "types")
     private String pokeTypes;
 
-    /*
     @Column(name = "classification")
     private String unknownB;
-	*/
     
-    /*
     @Column(name = "height")
     private String height;
-    */
     
-    /*
     @Column(name = "weight")
     private String weight;
-    */
     
-    /*
     @Column(name = "capRate")
     private double capRate;
-    */
     
-    /*
      @Column(name="eggSteps")
      private int eggSteps;
-     */
     
     @Column(name="abilities")
     private String abilities;
     
-    /*
      @Column(name="evRewardAmt")
-     private int evRewardAmt
+     private int evRewardAmt;
      
      @Column(name="evRewardAttr")
-     private String evRewardAttr
-     */
+     private String evRewardAttr;
     
     /*
      * Not sure how I want to implement recording weaknesses, if at all.
@@ -65,10 +53,13 @@ public class Pokemon {
     
     /*
      * Evolutions should provide a reference link to their evolved forms.
+     * This is out of scope for now.
      */
     
     /*
      * Maybe best not to worry about alt forms for now?
+     * Regional forms will get recorded as their own Pokemon, but alt forms rarely get different movesets or abilities.
+     * Rockruff will be an odd one for record purposes, though.
      */
     
     /*
@@ -85,11 +76,11 @@ public class Pokemon {
     @Column(name="tmMoves")
     private String tmMoves;
     
-    @Column(name="reminderMoves")
-    private String reminderMoves;
-    
     @Column(name="eggMoves")
     private String eggMoves;
+    
+    @Column(name="otherMoves")
+    private String otherMoves;
     
     @Column(name="totalMoves")
     private String totalMoves;
@@ -120,7 +111,7 @@ public class Pokemon {
     @Override
 	public int hashCode() {
 		return Objects.hash(abilities, baseAtk, baseDef, baseHP, baseSpAtk, baseSpDef, baseSpd, bst, eggMoves,
-				levelMoves, pokeName, pokeTypes, reminderMoves, tmMoves, totalMoves);
+				levelMoves, pokeName, pokeTypes, otherMoves, tmMoves, totalMoves);
 	}
 
 	@Override
@@ -136,7 +127,7 @@ public class Pokemon {
 				&& baseHP == other.baseHP && baseSpAtk == other.baseSpAtk && baseSpDef == other.baseSpDef
 				&& baseSpd == other.baseSpd && bst == other.bst && Objects.equals(eggMoves, other.eggMoves)
 				&& Objects.equals(levelMoves, other.levelMoves) && Objects.equals(pokeName, other.pokeName)
-				&& Objects.equals(pokeTypes, other.pokeTypes) && Objects.equals(reminderMoves, other.reminderMoves)
+				&& Objects.equals(pokeTypes, other.pokeTypes) && Objects.equals(otherMoves, other.otherMoves)
 				&& Objects.equals(tmMoves, other.tmMoves) && Objects.equals(totalMoves, other.totalMoves);
 	}
 
@@ -148,16 +139,25 @@ public class Pokemon {
     	this.pokeName = pokeName;
     }
 
-	public Pokemon(String pokeName, String pokeTypes, String abilities, String levelMoves, String tmMoves,
-			String reminderMoves, String eggMoves, String totalMoves, int baseHP, int baseAtk, int baseDef,
-			int baseSpAtk, int baseSpDef, int baseSpd) {
+	
+    public Pokemon(String pokeName, String pokeTypes, String unknownB, String height, String weight, double capRate,
+			int eggSteps, String abilities, int evRewardAmt, String evRewardAttr, String levelMoves, String tmMoves,
+			String otherMoves, String eggMoves, String totalMoves, int baseHP, int baseAtk, int baseDef,
+			int baseSpAtk, int baseSpDef, int baseSpd, int bst) {
 		super();
 		this.pokeName = pokeName;
 		this.pokeTypes = pokeTypes;
+		this.unknownB = unknownB;
+		this.height = height;
+		this.weight = weight;
+		this.capRate = capRate;
+		this.eggSteps = eggSteps;
 		this.abilities = abilities;
+		this.evRewardAmt = evRewardAmt;
+		this.evRewardAttr = evRewardAttr;
 		this.levelMoves = levelMoves;
 		this.tmMoves = tmMoves;
-		this.reminderMoves = reminderMoves;
+		this.otherMoves = otherMoves;
 		this.eggMoves = eggMoves;
 		this.totalMoves = totalMoves;
 		this.baseHP = baseHP;
@@ -166,6 +166,7 @@ public class Pokemon {
 		this.baseSpAtk = baseSpAtk;
 		this.baseSpDef = baseSpDef;
 		this.baseSpd = baseSpd;
+		this.bst = bst;
 	}
 
 	public String getPokeName() {
@@ -208,12 +209,12 @@ public class Pokemon {
 		this.tmMoves = tmMoves;
 	}
 
-	public String getReminderMoves() {
-		return reminderMoves;
+	public String getotherMoves() {
+		return otherMoves;
 	}
 
-	public void setReminderMoves(String reminderMoves) {
-		this.reminderMoves = reminderMoves;
+	public void setotherMoves(String otherMoves) {
+		this.otherMoves = otherMoves;
 	}
 
 	public String getEggMoves() {
@@ -290,11 +291,13 @@ public class Pokemon {
 
 	@Override
 	public String toString() {
-		return "Pokemon [pokeName=" + pokeName + ", pokeTypes=" + pokeTypes + ", abilities=" + abilities
-				+ ", levelMoves=" + levelMoves + ", tmMoves=" + tmMoves + ", reminderMoves=" + reminderMoves
-				+ ", eggMoves=" + eggMoves + ", totalMoves=" + totalMoves + ", baseHP=" + baseHP + ", baseAtk="
-				+ baseAtk + ", baseDef=" + baseDef + ", baseSpAtk=" + baseSpAtk + ", baseSpDef=" + baseSpDef
-				+ ", baseSpd=" + baseSpd + ", bst=" + bst + "]";
+		return "Pokemon [pokeName=" + pokeName + ", pokeTypes=" + pokeTypes + ", unknownB=" + unknownB + ", height="
+				+ height + ", weight=" + weight + ", capRate=" + capRate + ", eggSteps=" + eggSteps + ", abilities="
+				+ abilities + ", evRewardAmt=" + evRewardAmt + ", evRewardAttr=" + evRewardAttr + ", levelMoves="
+				+ levelMoves + ", tmMoves=" + tmMoves + ", otherMoves=" + otherMoves + ", eggMoves=" + eggMoves
+				+ ", totalMoves=" + totalMoves + ", baseHP=" + baseHP + ", baseAtk=" + baseAtk + ", baseDef=" + baseDef
+				+ ", baseSpAtk=" + baseSpAtk + ", baseSpDef=" + baseSpDef + ", baseSpd=" + baseSpd + ", bst=" + bst
+				+ "]";
 	}
     
     
