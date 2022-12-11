@@ -1,5 +1,7 @@
 package hibernate;
 
+import java.util.Objects;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -113,7 +115,32 @@ public class Pokemon {
     @Column(name="bst")
     private int bst;
     
-    public Pokemon() {
+    
+    
+    @Override
+	public int hashCode() {
+		return Objects.hash(abilities, baseAtk, baseDef, baseHP, baseSpAtk, baseSpDef, baseSpd, bst, eggMoves,
+				levelMoves, pokeName, pokeTypes, reminderMoves, tmMoves, totalMoves);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Pokemon other = (Pokemon) obj;
+		return Objects.equals(abilities, other.abilities) && baseAtk == other.baseAtk && baseDef == other.baseDef
+				&& baseHP == other.baseHP && baseSpAtk == other.baseSpAtk && baseSpDef == other.baseSpDef
+				&& baseSpd == other.baseSpd && bst == other.bst && Objects.equals(eggMoves, other.eggMoves)
+				&& Objects.equals(levelMoves, other.levelMoves) && Objects.equals(pokeName, other.pokeName)
+				&& Objects.equals(pokeTypes, other.pokeTypes) && Objects.equals(reminderMoves, other.reminderMoves)
+				&& Objects.equals(tmMoves, other.tmMoves) && Objects.equals(totalMoves, other.totalMoves);
+	}
+
+	public Pokemon() {
 
     }
     

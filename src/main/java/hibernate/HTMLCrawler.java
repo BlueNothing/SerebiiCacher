@@ -70,19 +70,27 @@ public class HTMLCrawler {
 	System.out.println("Dex stubs uploaded to DB.");
 	System.out.println("Testing DB contents!");
 	for(String s : palDexOverall) {
-		session.beginTransaction();
+		
+		Pokemon dbSample = (Pokemon) session.get(Pokemon.class, s);
 		Pokemon pokemon = new Pokemon();
 		pokemon.setPokeName(s);
-		System.out.println(pokemon.toString());
+		if (dbSample.getPokeName().equals(pokemon.getPokeName()) && dbSample.equals(pokemon)) {
+			System.out.println("Nothing to do here.");
+			continue;
+		} else {
+		session.beginTransaction();
 		session.persist(pokemon);
 		session.getTransaction().commit();
 	}
+	}
 	String validatorHQL = "FROM Pokemon";
 	List results = session.createQuery(validatorHQL).list();
+	results.forEach(outcome -> System.out.println(outcome));
 	session.close();
 	}
 	
 	public static void dexFiller(Session session) throws IOException {
+		
 		/*
 		 * Implementation pending!
 		 */
