@@ -3,6 +3,7 @@ package hibernate;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.hibernate.Session;
 import org.hibernate.internal.SessionFactoryImpl;
@@ -132,14 +133,26 @@ public class HTMLCrawler {
 				if(!(x.text().startsWith("AbilityDex"))) {
 					abilitiesDexOverall.add(x.text());
 					System.out.println(x.text());
-					//TODO: Add to Ability DB!
+					Ability dbSample = session.get(Ability.class, x.text());
+					Ability localAbility = new Ability();
+					localAbility.setAbilityName(x.text());
+					if (!(Objects.isNull(dbSample)) && dbSample.getAbilityName().equals(localAbility.getAbilityName()) && dbSample.equals(localAbility)) {
+						System.out.println("Nothing to do here.");
+						continue;
+					} else {
+					session.beginTransaction();
+					session.persist(localAbility);
+					session.getTransaction().commit();
 		}
+		} else {
+			continue;
 		}
 	
 	}
+	}
 	
 	public static void abilityFiller(Session session) throws IOException {
-		System.out.println("Outputting sample ability test.");
+		System.out.println("Starting abilityFiller");
 		Ability localAbility = new Ability();
 		String validatorHQL = "FROM Ability";
 		List<Ability> results = session.createQuery(validatorHQL).list();
@@ -161,6 +174,7 @@ public class HTMLCrawler {
 		 * Populate "content > main > table:nth-child(5) > tbody > tr:nth-child(8) > td" to overworldEffect.
 		 */
 		String inGameText, inDepthEffect, overworldEffect = null;
+		System.out.println(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(3) > td"));
 		if(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(3) > td").text().startsWith("Game's Text")) {
 			inGameText = abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(4) > td").text();
 			localAbility.setAbilityGameText(inGameText);
@@ -229,9 +243,9 @@ public class HTMLCrawler {
 		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
 		dexFiller(session);
-		session = HibernateUtil.getSessionFactory().openSession();
-		System.out.println("\n \n \n");
 		*/
+		session = HibernateUtil.getSessionFactory().openSession();
+		//System.out.println("\n \n \n");
 		abilityFinder(session);
 		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("\n \n \n");
