@@ -17,13 +17,13 @@ public class Ability {
     @Column(name = "name")
     private String abilityName;
 
-    @Column(name = "gameText")
+    @Column(name = "gameText", length = 1020)
     private String abilityGameText;
     
-    @Column(name = "inDepthAbilityEffect")
+    @Column(name = "inDepthAbilityEffect", length = 1020)
     private String inDepthAbilityEffect;
     
-    @Column(name="overworldEffect")
+    @Column(name="overworldEffect", length = 1020)
     private String overworldEffect;
     
     public String getAbilityName() {

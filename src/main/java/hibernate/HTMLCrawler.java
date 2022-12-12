@@ -136,7 +136,7 @@ public class HTMLCrawler {
 					Ability dbSample = session.get(Ability.class, x.text());
 					Ability localAbility = new Ability();
 					localAbility.setAbilityName(x.text());
-					if (!(Objects.isNull(dbSample)) && dbSample.getAbilityName().equals(localAbility.getAbilityName()) && dbSample.equals(localAbility)) {
+					if (!(Objects.isNull(dbSample)) && dbSample.getAbilityName().equals(localAbility.getAbilityName())) {
 						System.out.println("Nothing to do here.");
 						continue;
 					} else {
@@ -156,6 +156,7 @@ public class HTMLCrawler {
 		Ability localAbility = new Ability();
 		String validatorHQL = "FROM Ability";
 		List<Ability> results = session.createQuery(validatorHQL).list();
+		//Test case below - 
 		for (Ability ability : results) {
 			localAbility.setAbilityName(ability.getAbilityName()); //Working on this part to dynamically fill the dex!
 			String abilityName = localAbility.getAbilityName().toLowerCase().replace("%20", "").replace(" ", "");
@@ -173,40 +174,49 @@ public class HTMLCrawler {
 		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(7) > td" holds "Overworld Effect:"...
 		 * Populate "content > main > table:nth-child(5) > tbody > tr:nth-child(8) > td" to overworldEffect.
 		 */
+			
 		String inGameText, inDepthEffect, overworldEffect = null;
-		System.out.println(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(3) > td"));
-		if(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(3) > td").text().startsWith("Game's Text")) {
-			inGameText = abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(4) > td").text();
-			localAbility.setAbilityGameText(inGameText);
+		System.out.println(abilityName);
+		//System.out.println(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(3)").hasText());
+		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[3]/td").text().toString().startsWith("Game's Text")) {
+			inGameText = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[4]/td").text().toString();
+			System.out.println(inGameText);
 			System.out.println("Updating In-Game Text!");
+			localAbility.setAbilityGameText(inGameText);
 		} else {
 			inGameText = "0";
 		}
-		if(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(5) > td").text().startsWith("In-Depth Effect")) {
-			inDepthEffect = abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(6) > td").text();
-			localAbility.setInDepthAbilityEffect(inDepthEffect);
+		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[5]/td").text().toString().startsWith("In-Depth Effect")) {
+			inDepthEffect = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[6]/td").text().toString();
+			System.out.println(inDepthEffect);
 			System.out.println("Updating In-Depth Effect!");
+			localAbility.setInDepthAbilityEffect(inDepthEffect);
 		} else {
 			inDepthEffect = "0";
 		}
-		if(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(7) > td").text().startsWith("Overworld Effect")) {
-			overworldEffect = abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(8) > td").text();
-			localAbility.setOverworldEffect(overworldEffect);
+		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[7]/td").text().toString().startsWith("Overworld Effect")) {
+			overworldEffect = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[8]/td").text().toString();
+			System.out.println(overworldEffect);
 			System.out.println("Updating Overworld Effect!");
+			localAbility.setOverworldEffect(overworldEffect);
 		} else {
 			overworldEffect = "0";
 		}
-		if(!(ability.equals(localAbility))) {
+		
+		if(!(ability.equals(localAbility)) && !(Objects.isNull(ability))) {
+			session.beginTransaction();
+			ability.setAbilityName(localAbility.getAbilityName());
+			ability.setAbilityGameText(inGameText);
+			ability.setInDepthAbilityEffect(inDepthEffect);
+			ability.setOverworldEffect(overworldEffect);
+			session.update(ability);
+			session.getTransaction().commit();
+		} else if (!(ability.equals(localAbility))){
 			session.beginTransaction();
 			session.persist(localAbility);
 			session.getTransaction().commit();
 		}
 		}
-		//Elements abilityData = abilityDoc.select(".fooinfo");
-		//System.out.println(abilityData.text().toString());
-		/*
-		 * The following strategy looks like it should be fine, but runs into unexpected edge cases like Palafin in current implementation.
-		 */
 	}
 	
 	public static void attackFinder(Session session) throws IOException{
