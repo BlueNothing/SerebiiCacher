@@ -1,5 +1,7 @@
 package hibernate;
 
+import java.util.Objects;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -56,6 +58,31 @@ public class Ability {
 
 	public void setOverworldEffect(String overworldEffect) {
 		this.overworldEffect = overworldEffect;
+	}
+
+	@Override
+	public String toString() {
+		return "Ability [abilityName=" + abilityName + ", abilityGameText=" + abilityGameText
+				+ ", inDepthAbilityEffect=" + inDepthAbilityEffect + ", overworldEffect=" + overworldEffect + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(abilityGameText, abilityName, inDepthAbilityEffect, overworldEffect);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Ability other = (Ability) obj;
+		return Objects.equals(abilityGameText, other.abilityGameText) && Objects.equals(abilityName, other.abilityName)
+				&& Objects.equals(inDepthAbilityEffect, other.inDepthAbilityEffect)
+				&& Objects.equals(overworldEffect, other.overworldEffect);
 	}
 
 	public Ability() {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Scanner;
 
 import org.hibernate.Session;
 import org.hibernate.internal.SessionFactoryImpl;
@@ -75,7 +76,7 @@ public class HTMLCrawler {
 		Pokemon dbSample = session.get(Pokemon.class, s);
 		Pokemon pokemon = new Pokemon();
 		pokemon.setPokeName(s);
-		if (dbSample.getPokeName().equals(pokemon.getPokeName()) && dbSample.equals(pokemon)) {
+		if (!(Objects.isNull(dbSample)) && dbSample.getPokeName().equals(pokemon.getPokeName()) && dbSample.equals(pokemon)) {
 			System.out.println("Nothing to do here.");
 			continue;
 		} else {
@@ -87,16 +88,16 @@ public class HTMLCrawler {
 	String validatorHQL = "FROM Pokemon";
 	List<Pokemon> results = session.createQuery(validatorHQL).list();
 	results.forEach(outcome -> System.out.println(outcome));
-	session.close();
+	dexFiller(session);
 	}
 	
 	public static void dexFiller(Session session) throws IOException {
-		String validatorHQL = "FROM Pokemon";
-		List<Pokemon> results = session.createQuery(validatorHQL).list();
-		for (Pokemon poke : results) {
-			String pokeName = poke.getPokeName(); //Working on this part to dynamically fill the dex!
-			String URL = "https://www.serebii.net/pokedex-sv/" + pokeName.toLowerCase().replace("%20", "").replace(" ", "") + "/"; //Builds the URLs correctly!
-			Document dexEntry = Jsoup.connect((URL)).get();
+		//String validatorHQL = "FROM Pokemon";
+		//List<Pokemon> results = session.createQuery(validatorHQL).list();
+		//for (Pokemon poke : results) {
+		//	String pokeName = poke.getPokeName(); //Working on this part to dynamically fill the dex!
+		//	String URL = "https://www.serebii.net/pokedex-sv/" + pokeName.toLowerCase().replace("%20", "").replace(" ", "") + "/"; //Builds the URLs correctly!
+		//	Document dexEntry = Jsoup.connect((URL)).get();
 			//TYPES in HREFS here: #content > main > div:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(2) > td.cen
 			//Row contains Classification, Height, Weight, Capture Rate, Base Egg Steps: #content > main > div:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(4)
 			//Abilities here: #content > main > div:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(2)
@@ -115,7 +116,9 @@ public class HTMLCrawler {
 			 * 
 			 * 
 			 */
-		}
+		//}
+		session.close();
+		System.out.println("/n /n /n");
 		/*
 		 * Implementation pending!
 		 */
@@ -149,55 +152,44 @@ public class HTMLCrawler {
 		}
 	
 	}
+		abilityFiller(session);
 	}
 	
 	public static void abilityFiller(Session session) throws IOException {
+		/* NYI but proposed - 
+		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(7) > td" holds "Attacks Effected"...
+		 * Add list of named moves as new table element for relevant abilities.
+		 */
+		
 		System.out.println("Starting abilityFiller");
 		Ability localAbility = new Ability();
 		String validatorHQL = "FROM Ability";
 		List<Ability> results = session.createQuery(validatorHQL).list();
-		//Test case below - 
 		for (Ability ability : results) {
 			localAbility.setAbilityName(ability.getAbilityName()); //Working on this part to dynamically fill the dex!
 			String abilityName = localAbility.getAbilityName().toLowerCase().replace("%20", "").replace(" ", "");
 			String URL = "https://www.serebii.net/abilitydex/" + abilityName + ".shtml";
 			Document abilityDoc = Jsoup.connect((URL)).get();
 		//The code now effectively connects to the webpage for most abilities.
-		/*
-		 * Strategy:
-		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(3) > td" holds the String "Game's Text:" in its text field...
-		 * Populate "content > main > table:nth-child(5) > tbody > tr:nth-child(4) > td" to inGameText.
-		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(5) > td" holds "In-Depth Effect:"...
-		 * Populate "content > main > table:nth-child(5) > tbody > tr:nth-child(6) > td" to inDepthEffect.
-		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(7) > td" holds "Attacks Effected"...
-		 * SKIP FOR NOW, NYI.
-		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(7) > td" holds "Overworld Effect:"...
-		 * Populate "content > main > table:nth-child(5) > tbody > tr:nth-child(8) > td" to overworldEffect.
-		 */
+		 
 			
 		String inGameText, inDepthEffect, overworldEffect = null;
 		System.out.println(abilityName);
 		//System.out.println(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(3)").hasText());
 		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[3]/td").text().toString().startsWith("Game's Text")) {
 			inGameText = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[4]/td").text().toString();
-			System.out.println(inGameText);
-			System.out.println("Updating In-Game Text!");
 			localAbility.setAbilityGameText(inGameText);
 		} else {
 			inGameText = "0";
 		}
 		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[5]/td").text().toString().startsWith("In-Depth Effect")) {
 			inDepthEffect = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[6]/td").text().toString();
-			System.out.println(inDepthEffect);
-			System.out.println("Updating In-Depth Effect!");
 			localAbility.setInDepthAbilityEffect(inDepthEffect);
 		} else {
 			inDepthEffect = "0";
 		}
 		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[7]/td").text().toString().startsWith("Overworld Effect")) {
 			overworldEffect = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[8]/td").text().toString();
-			System.out.println(overworldEffect);
-			System.out.println("Updating Overworld Effect!");
 			localAbility.setOverworldEffect(overworldEffect);
 		} else {
 			overworldEffect = "0";
@@ -215,8 +207,13 @@ public class HTMLCrawler {
 			session.beginTransaction();
 			session.persist(localAbility);
 			session.getTransaction().commit();
+		} else if(ability.equals(localAbility)) {
+			System.out.println("Ability already in database. There is nothing to do here.");
+			continue;
 		}
 		}
+		session.close();
+		System.out.println("/n /n /n");
 	}
 	
 	public static void attackFinder(Session session) throws IOException{
@@ -233,40 +230,71 @@ public class HTMLCrawler {
 		}
 		}
 	for(String s : AtkDexOverall) {
-		System.out.println(s);
-		//TODO: Add to Move DB!
+		Move moveSample = session.get(Move.class, s);
+		Move move = new Move();
+		move.setMoveName(s);
+		if(!(Objects.isNull(moveSample)) && moveSample.getMoveName().equals(move.getMoveName()) && moveSample.equals(move)) {
+			System.out.println("Nothing to do here.");
+			continue;
+		} else {
+			session.beginTransaction();
+			session.persist(move);
+			session.getTransaction().commit();
+			System.out.println(s);
+		}
 	}
+	String validatorHQL = "FROM Move";
+	List<Move> results = session.createQuery(validatorHQL).list();
+	results.forEach(outcome -> System.out.println(outcome));
+	attackFiller(session);
 	}
 	
 	public static void attackFiller(Session session) throws IOException{
 		/*
 		 * Implementation pending.
 		 */
+		session.close();
+		System.out.println("/n /n /n");
 	}
 	
 	public static void main(String[] args) throws IOException {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.close();
 		/*
-		session = HibernateUtil.getSessionFactory().openSession();
-		dexFinder(session);
-		session = HibernateUtil.getSessionFactory().openSession();
-		System.out.println("\n \n \n");
-		dexFiller(session);
-		*/
-		session = HibernateUtil.getSessionFactory().openSession();
-		//System.out.println("\n \n \n");
-		abilityFinder(session);
-		session = HibernateUtil.getSessionFactory().openSession();
-		System.out.println("\n \n \n");
-		abilityFiller(session);
-		session = HibernateUtil.getSessionFactory().openSession();
-		System.out.println("\n \n \n");
-		/*
-		attackFinder(session);
-		session = HibernateUtil.getSessionFactory().openSession();
-		System.out.println("\n \n \n");
-		attackFiller(session);
+		 * Prefer to take user input to request activation of a subroutine.
 		 */
+		String selection = null;
+		Scanner scan = new Scanner(System.in);
+		while(selection == null || !(selection.equals("0"))) {
+			System.out.println("Please enter the number for your selection. To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To exit, type '0'. No other options are implemented at this time.");
+			selection = scan.nextLine();
+		switch (selection){
+		case "0" :
+			System.out.println("Thank you for using the Serebii Cacher. Ending execution.");
+			break;
+			
+		case "1" :
+			session = HibernateUtil.getSessionFactory().openSession();
+			dexFinder(session);
+			break;
+			
+		case "2" :
+			session = HibernateUtil.getSessionFactory().openSession();
+			abilityFinder(session);
+			break;
+			
+		case "3" :
+			session = HibernateUtil.getSessionFactory().openSession();
+			//attackFinder(session);
+			break;
+			
+		default :
+			System.out.println("Invalid input, please try again.");
+			System.out.println("Your input was: " + selection);
+			System.out.println("Handy hint: Remember to just type the number, not the quotes surrounding it.");
+			break;
+		}
+		
+	}
 	}
 }
