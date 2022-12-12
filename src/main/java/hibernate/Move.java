@@ -1,6 +1,15 @@
 package hibernate;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+
+import org.hibernate.Session;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -341,5 +350,44 @@ public class Move {
 				+ ", isCopyable=" + isCopyable + ", learnset=" + learnset + "]";
 	}
 
+	public static void attackFinder(Session session) throws IOException{
+		Document gen9AtkDex = Jsoup.connect("https://www.serebii.net/attackdex-sv/").get();
+		Elements AtkDex = gen9AtkDex.select("option");
+		List<TextNode> attacks = AtkDex.textNodes();
+		System.out.println(AtkDex.eachText());
+		ArrayList<String> AtkDexOverall = new ArrayList<String>();
+		System.out.println("Inital attack dex data:");
+		
+		for(TextNode x : attacks) {
+				if(!(x.text().startsWith("AttackDex"))) {
+					AtkDexOverall.add(x.text());
+		}
+		}
+	for(String s : AtkDexOverall) {
+		Move moveSample = session.get(Move.class, s);
+		Move move = new Move();
+		move.setMoveName(s);
+		if(!(Objects.isNull(moveSample)) && moveSample.getMoveName().equals(move.getMoveName()) && moveSample.equals(move)) {
+			System.out.println("Nothing to do here.");
+			continue;
+		} else {
+			session.beginTransaction();
+			session.persist(move);
+			session.getTransaction().commit();
+			System.out.println(s);
+		}
+	}
+	String validatorHQL = "FROM Move";
+	List<Move> results = session.createQuery(validatorHQL).list();
+	results.forEach(outcome -> System.out.println(outcome));
+	attackFiller(session);
+	}
 	
+	public static void attackFiller(Session session) throws IOException{
+		/*
+		 * Implementation pending.
+		 */
+		session.close();
+		System.out.println("/n /n /n");
+	}
 }
