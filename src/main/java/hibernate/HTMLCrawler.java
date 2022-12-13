@@ -34,8 +34,7 @@ public class HTMLCrawler {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.close();
 		session = HibernateUtil.getSessionFactory().openSession();
-		Pokemon.natDexFinder();
-		String selection = "0";
+		String selection = "";
 		Scanner scan = new Scanner(System.in);
 		while(selection == null || !(selection.equals("0"))) {
 			System.out.println("Please enter the number for your selection. To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To exit, type '0'. No other options are implemented at this time.");

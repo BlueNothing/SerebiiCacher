@@ -187,14 +187,23 @@ public class Ability {
 	}
 
 	public Ability() {
-
+		this.abilityName = null;
+    	this.abilityGameText = null;
+    	this.inDepthAbilityEffect = null;
+    	this.overworldEffect = null;
     }
     
     public Ability(String abilityName) {
-    	
+    	this.abilityName = abilityName;
+    	this.abilityGameText = null;
+    	this.inDepthAbilityEffect = null;
+    	this.overworldEffect = null;
     }
     public Ability(String abilityName, String abilityGameText, String inDepthAbilityEffect, String overworldEffect) {
-    	
+    	this.abilityName = abilityName;
+    	this.abilityGameText = abilityGameText;
+    	this.inDepthAbilityEffect = inDepthAbilityEffect;
+    	this.overworldEffect = overworldEffect;
     }
     
 }

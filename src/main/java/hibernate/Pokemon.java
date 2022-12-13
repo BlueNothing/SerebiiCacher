@@ -446,7 +446,7 @@ public class Pokemon {
 	}
 	String validatorHQL = "FROM Pokemon";
 	List<Pokemon> results = session.createQuery(validatorHQL).list();
-	results.forEach(outcome -> System.out.println(outcome));
+	//results.forEach(outcome -> System.out.println(outcome)); This prints the dex data, but isn't needed right now.
 	dexFiller(session);
 	}
 	
@@ -454,11 +454,25 @@ public class Pokemon {
 		String validatorHQL = "FROM Pokemon";
 		List<Pokemon> results = session.createQuery(validatorHQL).list();
 		for (Pokemon poke : results) {
+			System.out.println(poke.toString());
+			String levelMoves = "";
+			String tmMoves = "";
+			String eggMoves = "";
+			String otherMoves = "";
+			String overallMoves = "";
+			int baseAtk = 0;
+			int baseDef = 0;
+			int baseHP = 0;
+			int baseSpd = 0;
+			int baseSpAtk = 0;
+			int baseSpDef = 0;
+			int bst = 0;
 			String pokeName = poke.getPokeName(); //Working on this part to dynamically fill the dex!
 			String URL = "https://www.serebii.net/pokedex-sv/" + pokeName.toLowerCase().replace("%20", "").replace(" ", "") + "/"; //Builds the URLs correctly!
 			Document dexEntry = Jsoup.connect((URL)).get();
 			int i = 0;
 			int anchor = 0;
+			int max = dexEntry.select("table.dextable").size();
 			/*
 			 * Taking a moment to explain the strategy here: 
 			 * The tables on each page in Serebii's records have a consistent pattern, but not every field exists for every entry.
@@ -468,16 +482,22 @@ public class Pokemon {
 			 * If I do not find the one I'm looking for before I run out of tables, I exit the loop in an unconventional way and report an issue to the debug pane, then continue to try and process the others.
 			 */
 			boolean typeTableFound = false, abilityTableFound = false, levelMovesTableFound = false, statsTableFound = false, enabled = false;
-			while (!typeTableFound || !abilityTableFound || !levelMovesTableFound || !statsTableFound) {
+			while (!(typeTableFound && abilityTableFound && levelMovesTableFound && statsTableFound) || i >= max) {
 				Element dexTable = dexEntry.select("table.dextable").get(i);
+				Elements dexTableRows = dexTable.select("tr");
 				Element row = dexTable.selectFirst("tr");
 				Element titleCol = row.selectFirst("td");
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Name")) { //Means the type table has been found.
+					System.out.println("TYPE TABLE:");
 					anchor = i;
 					row = dexTable.select("tr").get(1);
-					Element typeCol = row.select("td").get(4);
+					Element typeCol = row.selectFirst(".cen");
+					System.out.println(typeCol.toString());
 					//Pick out the HREFs and cut their tails, then process to enums.
-					
+					typeTableFound = true;
+				
+					System.out.println("CLASSIFICATION TABLE");
+					System.out.println(row);
 					row = dexTable.select("tr").get(3);
 					Element classificationCol = row.select("td").get(0);
 					String classification = classificationCol.text();
@@ -491,28 +511,31 @@ public class Pokemon {
 					String weight = weightCol.text();
 					poke.setWeight(weight);
 					
-					Element capRateCol = row.select("td").get(3);
-					double capRate = Double.parseDouble(capRateCol.text());
+					//Element capRateCol = row.select("td").get(3);
+					//double capRate = Double.parseDouble(capRateCol.text());
+					double capRate = 1.1;
 					poke.setCapRate(capRate);
 					
-					Element eggStepsCol = row.select("td").get(4);
-					String eggStepString = eggStepsCol.text().replaceAll(",", "");
-					poke.setEggSteps(Integer.parseInt(eggStepString));
-					typeTableFound = true;
+					//Element eggStepsCol = row.select("td").get(4);
+					//String eggStepString = eggStepsCol.text().replaceAll(",", "");
+					//poke.setEggSteps(Integer.parseInt(eggStepString));
+					poke.setEggSteps(100); //PLACEHOLDER.
 				}
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().startsWith("Abilities:")) { //Means the ability table has been found.
 					anchor = i;
+					System.out.println("ABILITIES TABLE");
 					row = dexTable.select("tr").get(1);
 					//Pick out the HREFs and cut their tails.
+					poke.setAbilities("PLACEHOLDER");
 					
 					row = dexTable.select("tr").get(3);
 					Element evCol = row.select("td").get(2);
 					String evString = evCol.text();
 					int evAmt = Integer.parseInt(String.valueOf(evString.charAt(0)));
+					System.out.println(evString);
 					evString = evString.substring(2);
 					int garbageIndex = evString.indexOf("Point") - 1;
 					evString = evString.substring(0, garbageIndex);
-					System.out.println(evString);
 					poke.setEvRewardAmt(evAmt);
 					poke.setEvRewardAttr(evString);
 					
@@ -520,52 +543,116 @@ public class Pokemon {
 				}
 				if(enabled && !(Objects.isNull(titleCol.text())) && titleCol.text().equals("Weakness")) {
 					anchor = i;
+					System.out.println("WEAKNESS TABLE");
 					//row = dexTable.select("tr").get(1);
 					System.out.println("NYI");
 				}
 				
 				if(enabled && !(Objects.isNull(titleCol.text())) && titleCol.text().equals("Wild Hold Item")) {
 					anchor = i;
+					System.out.println("Wild Hold Item Table");
 					//row = dexTable.select("tr").get(1);
 					System.out.println("NYI");
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Standard Level Up")) {
 					anchor = i;
+					System.out.println("Level Moves Table");
 					Elements rows = dexTable.select("tr");
-					String levelMoves = "";
+					levelMoves = "";
+					/* Why isn't this working?
 					for(int j = 2; j < rows.size(); j++) {
 						Element move = rows.get(j);
 						if(move.select("td").get(1).text() != null) {
 						String moveName = move.select("td").get(1).text() + ", ";
 						levelMoves += moveName;
 						}
+						overallMoves = overallMoves + " " + levelMoves;
 					}
+					*/
+					poke.setLevelMoves(levelMoves);
 					levelMovesTableFound = true;
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Technical Machine Attacks")) {
-					
+					anchor = i;
+					System.out.println("TM Moves Table");
+					Elements rows = dexTable.select("tr");
+					tmMoves = "";
+					/*
+					for(int j = 2; j < rows.size(); j++) {
+						Element move = rows.get(j);
+						if(move.select("td").get(1).text() != null) {
+						String moveName = move.select("td").get(1).text() + ", ";
+						tmMoves += moveName;
+						}
+					}
+					poke.setTmMoves(tmMoves);
+					overallMoves = overallMoves + "; " + tmMoves;
+					*/
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Egg Moves")) {
-					
+					anchor = i;
+					System.out.println("Egg Moves Table");
+					Elements rows = dexTable.select("tr");
+					eggMoves = "";
+					/*
+					for(int j = 2; j < rows.size(); j++) {
+						Element move = rows.get(j);
+						if(move.select("td").get(1).text() != null) {
+						String moveName = move.select("td").get(1).text() + ", ";
+						eggMoves += moveName;
+						}
+					}
+					poke.setEggMoves(eggMoves);
+					overallMoves = overallMoves + "; " + eggMoves;
+					*/
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().contains("Move")) {
-					
-				}
-				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Egg Moves")) {
-					
+					anchor = i;
+					System.out.println("Other Moves Table");
+					Elements rows = dexTable.select("tr");
+					otherMoves = "";
+					/*
+					for(int j = 2; j < rows.size(); j++) {
+						Element move = rows.get(j);
+						if(move.select("td").get(1).text() != null) {
+						String moveName = move.select("td").get(1).text() + ", ";
+						otherMoves += moveName;
+						}
+					}
+					overallMoves = overallMoves + "; " + otherMoves;
+					*/
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Stats")) {
-					
+					anchor = i;
+					System.out.println("STATS TABLE");
+					row = dexTable.select("tr").get(2);
+					baseHP = Integer.parseInt(row.select("td").get(1).text());
+					baseAtk = Integer.parseInt(row.select("td").get(2).text());
+					baseDef = Integer.parseInt(row.select("td").get(3).text());
+					baseSpAtk = Integer.parseInt(row.select("td").get(4).text());
+					baseSpDef = Integer.parseInt(row.select("td").get(5).text());
+					baseSpd = Integer.parseInt(row.select("td").get(6).text());
+					bst = baseHP + baseAtk + baseDef + baseSpAtk + baseSpDef + baseSpd;
+					poke.setBaseHP(baseHP);
+					poke.setBaseAtk(baseAtk);
+					poke.setBaseDef(baseDef);
+					poke.setBaseSpAtk(baseSpAtk);
+					poke.setBaseSpDef(baseSpDef);
+					poke.setBaseSpd(baseSpd);
+					poke.setBst(bst);
+				
 				}
-				
 				i += 1;
-				
 			}
+			poke.setotherMoves(otherMoves);
+			poke.setTotalMoves(overallMoves);
+			poke.toString();
+			break;
 		}
 			
 			//TYPES in HREFS here: #content > main > div:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(2) > td.cen
