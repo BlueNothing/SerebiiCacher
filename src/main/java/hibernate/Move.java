@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
@@ -20,7 +22,7 @@ import jakarta.persistence.Table;
 @Table(name = "moves")
 public class Move {
 	@Id
-	@Column(name="moveName")
+	@Column(name="moveName", length = 10000)
 	private String moveName;
 	
 	@Column(name="moveType")
@@ -38,10 +40,10 @@ public class Move {
 	@Column(name="moveAcc")
 	private int moveAcc;
 	
-	@Column(name="battleEffect")
+	@Column(name="battleEffect", length = 10000)
 	private String battleEffect;
 	
-	@Column(name="secondaryEffect")
+	@Column(name="secondaryEffect", length = 10000)
 	private String secondaryEffect;
 	
 	@Column(name="moveBaseCrit")
@@ -95,7 +97,7 @@ public class Move {
 	@Column(name="isCopyable")
 	private boolean isCopyable;
 	
-	@Column(name="learnset")
+	@Column(name="learnset", length = 10000)
 	private String learnset;
 
 	public String getMoveName() {
@@ -384,10 +386,108 @@ public class Move {
 	}
 	
 	public static void attackFiller(Session session) throws IOException{
-		/*
-		 * Implementation pending.
-		 */
+		String validatorHQL = "FROM Move";
+		List<Move> results = session.createQuery(validatorHQL).list();
+		for (Move move : results) {
+			System.out.println(move.toString());
+			String moveName = move.getMoveName(); //Working on this part to dynamically fill the dex!
+			String urlMoveName = moveName.toLowerCase().replace("%20", "").replace(" ", "").replace("%C3%A9", "e").replace("é", "e");
+			System.out.println(urlMoveName);
+			String URL = "https://www.serebii.net/attackdex-sv/" + urlMoveName + ".shtml"; //Builds the URLs correctly!
+			Document dexEntry = Jsoup.connect((URL)).get();
+			/*
+			 * Taking a moment to explain the strategy here: 
+			 * The tables on each page in Serebii's records have a consistent pattern, but not every field exists for every entry.
+			 * So if a table exists, it will appear after the tables before it in the pattern.
+			 * I iterate 'i' over the list of tables on the page until I find the one I'm looking for (by checking the headers, which are uniform where extant).
+			 * If I find the one I'm looking for, I update anchor to start from that table, process that table, and repeat the process for the next.
+			 * If I do not find the one I'm looking for before I run out of tables, I exit the loop in an unconventional way and report an issue to the debug pane, then continue to try and process the others.
+			 * 
+			 */
+			for(int i = 0; i < dexEntry.select("table.dextable").size(); i++) {
+				Element dexTable = dexEntry.select("table.dextable").get(0);
+				try {
+				dexTable = dexEntry.select("table.dextable").get(i);
+				} catch(IndexOutOfBoundsException e) {
+					e.printStackTrace();
+					break;
+				}
+				Elements dexTableRows = dexTable.select("tr");
+				Element row = dexTable.selectFirst("tr");
+				Element titleCol = row.selectFirst("td");
+				System.out.println("TITLE COLUMN: " + titleCol.text()); //Useful for debugging.
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Attack Name")) {
+					row = dexTableRows.select("tr").get(5);
+					Elements cols = row.select("td");
+					Element col = cols.get(0);
+					String battleEffect = col.text();
+					if(battleEffect.contains("This move can't be used.")) {
+						System.out.println("DEPRECATED MOVE");
+						continue;
+					}
+					row = dexTableRows.select("tr").get(1);
+					cols = row.select("td");
+					col = cols.get(1);
+					System.out.println(col);
+					Element hrefSource = col.select("a").first();
+					String typeHref = hrefSource.attr("href"); //This isn't processing for some reason.
+					String moveType = typeHref.substring((typeHref.indexOf("sv/") + 3), typeHref.indexOf(".shtml"));
+					System.out.println(moveType);
+					col = cols.get(2);
+					String categoryHref = col.select("a").first().attr("href");
+					String moveCategory = categoryHref.substring((categoryHref.indexOf("sv/") + 3), categoryHref.indexOf(".shtml"));
+					System.out.println(moveCategory);
+					
+					row = dexTableRows.select("tr").get(3);
+					cols = row.select("td");
+					int powerPoints = Integer.parseInt(cols.get(0).text());
+					int basePower = Integer.parseInt(cols.get(1).text());
+					int accuracy = Integer.parseInt(cols.get(2).text());
+					System.out.println(powerPoints + " " + basePower + " " + accuracy);
+					
+					row = dexTableRows.select("tr").get(7);
+					cols = row.select("td");
+					String inDepthEffect = cols.get(0).text();
+					System.out.println("In-Depth Effect: " + inDepthEffect);
+					
+					row = dexTableRows.select("tr").get(9);
+					cols = row.select("td");
+					String secondaryEffect = cols.get(0).text(); //Where's this redundancy?
+					System.out.println("Secondary Effect: " + secondaryEffect);
+					
+					double effectRate = Double.parseDouble(cols.get(1).text());
+					System.out.println("Effect Rate: " + effectRate);
+					
+					double baseCrit = 0;
+					if(cols.get(0).text().equals("None")) {
+						baseCrit = 0;
+					} else {
+						baseCrit = Double.parseDouble(cols.get(0).text().substring(0, cols.get(0).text().length() - 1));
+					}
+					System.out.println("Base Crit: " + baseCrit);
+					int movePriority = Integer.parseInt(cols.get(1).text());
+					System.out.println("Move Priority: " + movePriority);
+					String moveTargets = cols.get(2).text();
+					System.out.println("Move Targets: " + moveTargets);
+				}
+				
+				
+				/*
+				Pokemon dbSample = session.get(Pokemon.class, poke.getPokeName());
+				 
+				if (!(Objects.isNull(dbSample)) && dbSample.getPokeName().equals(poke.getPokeName()) && dbSample.equals(poke)) {
+					System.out.println("Nothing to do here.");
+					continue;
+					}
+				*/
+				//session.beginTransaction();
+				//session.persist(move);
+				//session.getTransaction().commit();
+		}
+			
+	}
 		session.close();
 		System.out.println("/n /n /n");
 	}
+	
 }
