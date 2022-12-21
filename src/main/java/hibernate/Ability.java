@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
@@ -19,11 +21,6 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "abilities")
 public class Ability {
-	/*
-	 * NAME, GAME TEXT, IN-DEPTH EFFECT;
-	 * Possibly add an element for affectedMoves, but this one is more of a 'later development' feature.
-	 */
-
 	@Id
     @Column(name = "name")
     private String abilityName;
@@ -36,6 +33,12 @@ public class Ability {
     
     @Column(name="overworldEffect", length = 1020)
     private String overworldEffect;
+    
+    @Column(name="affectedMoves", length = 3000)
+    private String affectedMoves;
+    
+    @Column(name="accessSet", length = 1020)
+    private String accessSet;
     
     public String getAbilityName() {
 		return abilityName;
@@ -68,16 +71,35 @@ public class Ability {
 	public void setOverworldEffect(String overworldEffect) {
 		this.overworldEffect = overworldEffect;
 	}
+	
+
+	public String getAffectedMoves() {
+		return affectedMoves;
+	}
+
+	public void setAffectedMoves(String affectedMoves) {
+		this.affectedMoves = affectedMoves;
+	}
+
+	public String getAccessSet() {
+		return accessSet;
+	}
+
+	public void setAccessSet(String accessSet) {
+		this.accessSet = accessSet;
+	}
 
 	@Override
 	public String toString() {
 		return "Ability [abilityName=" + abilityName + ", abilityGameText=" + abilityGameText
-				+ ", inDepthAbilityEffect=" + inDepthAbilityEffect + ", overworldEffect=" + overworldEffect + "]";
+				+ ", inDepthAbilityEffect=" + inDepthAbilityEffect + ", overworldEffect=" + overworldEffect
+				+ ", affectedMoves=" + affectedMoves + ", accessSet=" + accessSet + "]";
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(abilityGameText, abilityName, inDepthAbilityEffect, overworldEffect);
+		return Objects.hash(abilityGameText, abilityName, accessSet, affectedMoves, inDepthAbilityEffect,
+				overworldEffect);
 	}
 
 	@Override
@@ -90,6 +112,7 @@ public class Ability {
 			return false;
 		Ability other = (Ability) obj;
 		return Objects.equals(abilityGameText, other.abilityGameText) && Objects.equals(abilityName, other.abilityName)
+				&& Objects.equals(accessSet, other.accessSet) && Objects.equals(affectedMoves, other.affectedMoves)
 				&& Objects.equals(inDepthAbilityEffect, other.inDepthAbilityEffect)
 				&& Objects.equals(overworldEffect, other.overworldEffect);
 	}
@@ -98,6 +121,7 @@ public class Ability {
 		Document abiliDex = Jsoup.connect("https://www.serebii.net/abilitydex/").get();
 		Elements abilitiesDex = abiliDex.select("option");
 		List<TextNode> abilities = abilitiesDex.textNodes();
+		List<Ability> results = new ArrayList<Ability>();
 		System.out.println(abilitiesDex.eachText());
 		ArrayList<String> abilitiesDexOverall = new ArrayList<String>();
 		System.out.println("Inital ability dex data:");
@@ -109,81 +133,146 @@ public class Ability {
 					Ability dbSample = session.get(Ability.class, x.text());
 					Ability localAbility = new Ability();
 					localAbility.setAbilityName(x.text());
+					results.add(localAbility);
 					if (!(Objects.isNull(dbSample)) && dbSample.getAbilityName().equals(localAbility.getAbilityName())) {
 						System.out.println("Nothing to do here.");
 						continue;
 					} else {
-					session.beginTransaction();
-					session.persist(localAbility);
-					session.getTransaction().commit();
 		}
 		} else {
 			continue;
 		}
 	
 	}
-		abilityFiller(session);
+		System.out.println(results.toString());
+		abilityFiller(session, results);
 	}
 	
-	public static void abilityFiller(Session session) throws IOException {
-		/* NYI but proposed - 
-		 * If "content > main > table:nth-child(5) > tbody > tr:nth-child(7) > td" holds "Attacks Effected"...
-		 * Add list of named moves as new table element for relevant abilities.
-		 */
+	public static void abilityFiller(Session session, List<Ability> results) throws IOException {
 		
 		System.out.println("Starting abilityFiller");
-		Ability localAbility = new Ability();
-		String validatorHQL = "FROM Ability";
-		List<Ability> results = session.createQuery(validatorHQL).list();
+		//String validatorHQL = "FROM Ability";
+		//List<Ability> results = session.createQuery(validatorHQL).list();
 		for (Ability ability : results) {
+			Ability localAbility = new Ability();
 			localAbility.setAbilityName(ability.getAbilityName());
 			String abilityName = localAbility.getAbilityName().toLowerCase().replace("%20", "").replace(" ", "");
 			String URL = "https://www.serebii.net/abilitydex/" + abilityName + ".shtml";
 			Document abilityDoc = Jsoup.connect((URL)).get();
+			String inGameText = null, inDepthEffect = null, overworldEffect = null, affectedMoves = null, accessSet = null;
+			TreeSet<String> affectedMovesTree = new TreeSet<String>();
+			TreeSet<String> accessSetTree = new TreeSet<String>();
+			for(int i = 0; i < abilityDoc.select("table.dextable").size(); i++) {
+				Element dexTable = abilityDoc.select("table.dextable").get(0);
+				try {
+				dexTable = abilityDoc.select("table.dextable").get(i);
+				} catch(IndexOutOfBoundsException e) {
+					e.printStackTrace();
+					break;
+				}
+				Elements dexTableRows = dexTable.select("tr");
+				System.out.println("Number of Rows: " + dexTableRows.size());
+				Element row = dexTable.selectFirst("tr");
+				Element titleCol = row.selectFirst("td");
+				System.out.println("TITLE COLUMN: " + titleCol.text());
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Name")) { //First row has Attack Name, Attack Type, Category.
+					for(int j = 0; j < (dexTableRows.size() - 1); j += 2) {
+						row = dexTableRows.select("tr").get((j + 1));
+						Elements cols = row.select("td");
+						if(cols.size() == 0) {
+							continue;
+						}
+						Element col = cols.get(0);
+						Element subTitle = dexTableRows.select("tr").get(j).select("td").first();
+						
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Game's Text:")) {
+							inGameText = col.text();
+							localAbility.setAbilityGameText(inGameText);
+							System.out.println("In-Game Text: " + inGameText);
+						}
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("In-Depth Effect:")) {
+							inDepthEffect = col.text();
+							localAbility.setInDepthAbilityEffect(inDepthEffect);
+							System.out.println("In-Depth Effect: " + inDepthEffect);
+						}
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Overworld Effect:")) {
+							overworldEffect = col.text();
+							localAbility.setOverworldEffect(overworldEffect);
+							System.out.println("Overworld Effect: " + overworldEffect);
+						}
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Details & Attacks Effected")) {
+							Element subTable = row.select("table").first();
+							Elements subTableRows = subTable.select("tr");
+							for(Element subTableRow : subTableRows) {
+								if(subTableRow.select("td").size() < 1) {
+									continue;
+								} else {
+								String moveName = subTableRow.select("td").get(0).text();
+								System.out.println(moveName);
+								affectedMovesTree.add(moveName);
+							}
+							}
+							affectedMoves = affectedMovesTree.toString().replace("[", "").replace("]", "");
+							localAbility.setAffectedMoves(affectedMoves);
+							System.out.println("Attacks Effected: " + affectedMoves);
+						}
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Attacks Effected")) {
+							Element subTable = row.select("table").first();
+							Elements subTableRows = subTable.select("tr");
+							for(Element subTableRow : subTableRows) {
+								String moveName = subTableRow.select("td").get(0).text();
+								System.out.println(moveName);
+								affectedMovesTree.add(moveName);
+							}
+							affectedMoves = affectedMovesTree.toString().replace("[", "").replace("]", "");
+							localAbility.setAffectedMoves(affectedMoves);
+							System.out.println("Attacks Effected: " + affectedMoves);
+						}
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Further Details")) {
+							continue;
+						}
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Lv.")) {
+							continue;
+						}
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("")) {
+							continue;
+						}
+						if(!(Objects.isNull(subTitle.text())) && Character.isDigit(subTitle.text().charAt(0))) {
+							continue;
+						}
+					}
+				}
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("No.")) {
+					for(int j = 2; j < dexTableRows.size(); j+= 2) {
+						row = dexTableRows.select("tr").get(j);
+						Elements cols = row.select("td");
+						Element col = cols.get(3);
+						Element subTitle = dexTableRows.select("tr").get(j).select("td").first();
+						System.out.println(col.text());
+						accessSetTree.add(col.text());
+						}
+						accessSet = accessSetTree.toString().replace("[", "").replace("]", "");
+						
+			}
+			}
+			localAbility.setAccessSet(accessSet);
+			System.out.println("Access Set: " + accessSet);
 		//The code now effectively connects to the webpage for most abilities.
-		 
-			
-		String inGameText, inDepthEffect, overworldEffect = null;
-		//System.out.println(localAbility.getAbilityName());
-		//System.out.println(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(3)").hasText());
-		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[3]/td").text().toString().startsWith("Game's Text")) {
-			inGameText = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[4]/td").text().toString();
-			localAbility.setAbilityGameText(inGameText);
-		} else {
-			inGameText = "0";
-			localAbility.setAbilityGameText(inGameText);
-		}
-		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[5]/td").text().toString().startsWith("In-Depth Effect")) {
-			inDepthEffect = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[6]/td").text().toString();
-			localAbility.setInDepthAbilityEffect(inDepthEffect);
-		} else {
-			inDepthEffect = "0";
-			localAbility.setInDepthAbilityEffect(inDepthEffect);
-		}
-		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[7]/td").text().toString().startsWith("Overworld Effect")) {
-			overworldEffect = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[8]/td").text().toString();
-			localAbility.setOverworldEffect(overworldEffect);
-		} else {
-			overworldEffect = "0";
-			localAbility.setOverworldEffect(overworldEffect);
-		}
-		
-		if(ability.toString().equals(localAbility.toString())) {
+			Ability dbSample = session.get(Ability.class, localAbility.getAbilityName());
+			System.out.println(localAbility.toString());
+		if(!(Objects.isNull(dbSample)) && dbSample.toString().equals(localAbility.toString())) {
 			System.out.println(localAbility.getAbilityName() + ": already in database. There is nothing to do here.");
 			continue;
-		} else if(!(ability.toString().equals(localAbility.toString())) && !(Objects.isNull(ability))) {
+		} else if(!(Objects.isNull(dbSample)) && !(dbSample.toString().equals(localAbility.toString()))) {
 			session.beginTransaction();
-			ability.setAbilityName(localAbility.getAbilityName());
-			ability.setAbilityGameText(inGameText);
-			ability.setInDepthAbilityEffect(inDepthEffect);
-			ability.setOverworldEffect(overworldEffect);
-			session.update(ability);
+			session.saveOrUpdate(localAbility);
 			session.getTransaction().commit();
-		} else if (!(ability.equals(localAbility))){
+		} else if (Objects.isNull(dbSample)){
 			session.beginTransaction();
 			session.persist(localAbility);
 			session.getTransaction().commit();
 		}
+		
 		}
 		session.close();
 	}
@@ -201,11 +290,17 @@ public class Ability {
     	this.inDepthAbilityEffect = null;
     	this.overworldEffect = null;
     }
-    public Ability(String abilityName, String abilityGameText, String inDepthAbilityEffect, String overworldEffect) {
-    	this.abilityName = abilityName;
-    	this.abilityGameText = abilityGameText;
-    	this.inDepthAbilityEffect = inDepthAbilityEffect;
-    	this.overworldEffect = overworldEffect;
-    }
+
+	public Ability(String abilityName, String abilityGameText, String inDepthAbilityEffect, String overworldEffect,
+			String affectedMoves, String accessSet) {
+		super();
+		this.abilityName = abilityName;
+		this.abilityGameText = abilityGameText;
+		this.inDepthAbilityEffect = inDepthAbilityEffect;
+		this.overworldEffect = overworldEffect;
+		this.affectedMoves = affectedMoves;
+		this.accessSet = accessSet;
+	}
+   
     
 }
