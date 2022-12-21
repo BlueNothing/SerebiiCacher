@@ -144,28 +144,34 @@ public class Ability {
 		 
 			
 		String inGameText, inDepthEffect, overworldEffect = null;
-		System.out.println(abilityName);
+		//System.out.println(localAbility.getAbilityName());
 		//System.out.println(abilityDoc.selectFirst("content > main > table:nth-child(5) > tbody > tr:nth-child(3)").hasText());
 		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[3]/td").text().toString().startsWith("Game's Text")) {
 			inGameText = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[4]/td").text().toString();
 			localAbility.setAbilityGameText(inGameText);
 		} else {
 			inGameText = "0";
+			localAbility.setAbilityGameText(inGameText);
 		}
 		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[5]/td").text().toString().startsWith("In-Depth Effect")) {
 			inDepthEffect = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[6]/td").text().toString();
 			localAbility.setInDepthAbilityEffect(inDepthEffect);
 		} else {
 			inDepthEffect = "0";
+			localAbility.setInDepthAbilityEffect(inDepthEffect);
 		}
 		if(abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[7]/td").text().toString().startsWith("Overworld Effect")) {
 			overworldEffect = abilityDoc.selectXpath("//*[@id=\"content\"]/main/table[3]/tbody/tr[8]/td").text().toString();
 			localAbility.setOverworldEffect(overworldEffect);
 		} else {
 			overworldEffect = "0";
+			localAbility.setOverworldEffect(overworldEffect);
 		}
 		
-		if(!(ability.equals(localAbility)) && !(Objects.isNull(ability))) {
+		if(ability.toString().equals(localAbility.toString())) {
+			System.out.println(localAbility.getAbilityName() + ": already in database. There is nothing to do here.");
+			continue;
+		} else if(!(ability.toString().equals(localAbility.toString())) && !(Objects.isNull(ability))) {
 			session.beginTransaction();
 			ability.setAbilityName(localAbility.getAbilityName());
 			ability.setAbilityGameText(inGameText);
@@ -177,13 +183,9 @@ public class Ability {
 			session.beginTransaction();
 			session.persist(localAbility);
 			session.getTransaction().commit();
-		} else if(ability.equals(localAbility)) {
-			System.out.println("Ability already in database. There is nothing to do here.");
-			continue;
 		}
 		}
 		session.close();
-		System.out.println("/n /n /n");
 	}
 
 	public Ability() {

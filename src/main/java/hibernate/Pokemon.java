@@ -456,8 +456,6 @@ public class Pokemon {
 		session.getTransaction().commit();
 	}
 	}
-	String validatorHQL = "FROM Pokemon";
-	List<Pokemon> results = session.createQuery(validatorHQL).list();
 	//results.forEach(outcome -> System.out.println(outcome)); This prints the dex data, but isn't needed right now.
 	dexFiller(session);
 	}
@@ -772,7 +770,7 @@ public class Pokemon {
 				}
 			*/
 			session.beginTransaction();
-			session.persist(poke);
+			session.update(poke);
 			session.getTransaction().commit();
 		}
 			

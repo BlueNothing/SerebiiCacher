@@ -34,12 +34,16 @@ public class HTMLCrawler {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.close();
 		session = HibernateUtil.getSessionFactory().openSession();
-		String selection = "3";
+		/*
+		 * String selection = "3";
 		Scanner scan = new Scanner(System.in);
-		while(selection == null || !(selection.equals("0"))) {
+		//while(selection == null || !(selection.equals("0"))) {
 			//System.out.println("Please enter the number for your selection. To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To exit, type '0'. No other options are implemented at this time.");
 			//selection = scan.nextLine();
-		switch (selection){
+			 * 
+			 */
+		int selection = 3;
+		switch (String.valueOf(selection)){
 		case "0" :
 			System.out.println("Thank you for using the Serebii Cacher. Ending execution.");
 			break;
@@ -66,7 +70,5 @@ public class HTMLCrawler {
 			System.out.println("Handy hint: Remember to just type the number, not the quotes surrounding it.");
 			break;
 		}
-		break; //Remove in production!
+		}
 	}
-	}
-}
