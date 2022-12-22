@@ -42,7 +42,7 @@ public class HTMLCrawler {
 			//selection = scan.nextLine();
 			 * 
 			 */
-		int selection = 3;
+		int selection = 1;
 		switch (String.valueOf(selection)){
 		case "0" :
 			System.out.println("Thank you for using the Serebii Cacher. Ending execution.");
@@ -51,7 +51,6 @@ public class HTMLCrawler {
 		case "1" :
 			session = HibernateUtil.getSessionFactory().openSession();
 			Pokemon.dexFinder(session);
-			Pokemon.dexFiller(session);
 			break;
 			
 		case "2" :

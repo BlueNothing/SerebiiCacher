@@ -423,6 +423,7 @@ public class Pokemon {
 		Elements palDexElems = palDex.select("option");
 		List<String> palDexData = palDexElems.eachText();
 		ArrayList<String> palDexOverall = new ArrayList<String>();
+		List<Pokemon> results = new ArrayList<Pokemon>();
 		System.out.println("Inital Pokedex data:");
 		/*
 		 */
@@ -447,24 +448,18 @@ public class Pokemon {
 		Pokemon dbSample = session.get(Pokemon.class, s);
 		Pokemon pokemon = new Pokemon();
 		pokemon.setPokeName(s);
-		if (!(Objects.isNull(dbSample)) && dbSample.getPokeName().equals(pokemon.getPokeName()) && dbSample.equals(pokemon)) {
-			System.out.println("Nothing to do here.");
-			continue;
-		} else {
-		session.beginTransaction();
-		session.persist(pokemon);
-		session.getTransaction().commit();
-	}
+		results.add(pokemon);
 	}
 	//results.forEach(outcome -> System.out.println(outcome)); This prints the dex data, but isn't needed right now.
-	dexFiller(session);
+	dexFiller(session, results);
 	}
 	
-	public static void dexFiller(Session session) throws IOException {
-		String validatorHQL = "FROM Pokemon";
-		List<Pokemon> results = session.createQuery(validatorHQL).list();
+	public static void dexFiller(Session session, List<Pokemon> results) throws IOException {
+		//String validatorHQL = "FROM Pokemon";
+		//List<Pokemon> results = session.createQuery(validatorHQL).list();
 		for (Pokemon poke : results) {
 			System.out.println(poke.toString());
+			Pokemon localPoke = new Pokemon(poke.getPokeName());
 			String levelMoves = "";
 			String tmMoves = "";
 			String eggMoves = "";
@@ -477,10 +472,10 @@ public class Pokemon {
 			int baseSpAtk = 0;
 			int baseSpDef = 0;
 			int bst = 0;
-			String pokeName = poke.getPokeName(); //Working on this part to dynamically fill the dex!
+			String pokeName = localPoke.getPokeName(); //Working on this part to dynamically fill the dex!
 			String urlPokeName = pokeName.toLowerCase().replace("%20", "").replace(" ", "").replace("%C3%A9", "e").replace("é", "e");
-			urlPokeName = "charmander";
-			System.out.println(urlPokeName);
+			//urlPokeName = "charmander";
+			//System.out.println(urlPokeName);
 			String URL = "https://www.serebii.net/pokedex-sv/" + urlPokeName + "/"; //Builds the URLs correctly!
 			Document dexEntry = Jsoup.connect((URL)).get();
 			/*
@@ -495,7 +490,7 @@ public class Pokemon {
 			 * Maybe set a boolean value for whether it's a new Pokemon, then adapt the xPath variables accordingly.
 			 */
 			boolean typeTableFound = false, abilityTableFound = false, levelMovesTableFound = false, statsTableFound = false;
-			boolean enabled = false; //Used for 'experimental' or unimplemented features.
+			boolean enabled = true; //Used for 'experimental' or unimplemented features.
 			for(int i = 0; i < dexEntry.select("table.dextable").size(); i++) {
 				Element dexTable = dexEntry.select("table.dextable").get(0);
 				try {
@@ -508,110 +503,163 @@ public class Pokemon {
 				Element row = dexTable.selectFirst("tr");
 				Element titleCol = row.selectFirst("td");
 				System.out.println("TITLE COLUMN: " + titleCol.text()); //Useful for debugging.
-				Element sortRow = dexTable.selectXpath("//*[@id=\"content\"]/main/div[2]/table[4]/tbody/tr[4]/td[1]").first();
-				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Name")) { //Means the type table has been found.
-					System.out.println("TYPE TABLE:");
-					row = dexTableRows.select("tr").get(1);
-					//This should work for dual-types, will need to test.
-					Element typeCol = row.selectFirst(".cen");
-					Elements types = typeCol.select("a");
-					String typeList = "";
-					for(Element type : types) {
-						String typeHref = type.attr("href");
-						System.out.println(typeHref);
-						String storedType = typeHref.substring((typeHref.indexOf("sv/") + 3), typeHref.indexOf(".shtml"));
-						storedType = storedType.substring(0, 1).toUpperCase() + storedType.substring(1) + ", ";
-						typeList += storedType;
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Name")) { //First row has Attack Name, Attack Type, Category.
+					for(int j = 0; j < (dexTableRows.size() - 1); j += 2) {
+						row = dexTableRows.select("tr").get((j + 1));
+						Elements cols = row.select("td");
+						int k = 0;
+						for(Element col : cols) {
+							System.out.println(k + col.text().toString());
+							k++;
+						}
+						Element col = cols.get(0);
+						Element subTitle = dexTableRows.select("tr").get(j).select("td").first();
+						System.out.println(subTitle.text());
+						if(j == 0) {
+						Element typeCol = cols.get(cols.size() - 1);
+						Elements types = typeCol.select("a");
+						String typeList = "";
+						for(Element type : types) {
+							String typeHref = type.attr("href");
+							//System.out.println(typeHref);
+							String storedType = typeHref.substring((typeHref.indexOf("sv/") + 3), typeHref.indexOf(".shtml"));
+							storedType = storedType.substring(0, 1).toUpperCase() + storedType.substring(1) + ", ";
+							typeList += storedType;
+						}
+						typeList = typeList.substring(0, (typeList.length() - 2)); //This may behave erratically for things that have conditional types like Megas or Regional Forms.
+						System.out.println("Type: " + typeList);
+						localPoke.setPokeTypes(typeList);
+						}
+							if(subTitle.text().equals("Classification") ) {
+							System.out.println("Classification sub-table");
+							col = cols.get(0);
+							String classification = col.text();
+							System.out.println(classification);
+							localPoke.setClassification(classification);
+							
+							col = cols.get(1);
+							String height = col.text();
+							height = height.substring(0, (height.indexOf("\"") + 1));
+							System.out.println(height);
+							localPoke.setHeight(height);
+							
+							col = cols.get(2);
+							String weight = col.text();
+							weight = weight.substring(0, weight.indexOf("lbs") + 2);
+							weight = weight.replace("lb", " lbs");
+							System.out.println(weight);
+							localPoke.setWeight(weight);
+							
+							col = cols.get(3);
+							double capRate = Double.parseDouble(col.text());
+							System.out.println(capRate);
+							localPoke.setCapRate(capRate);
+							
+							col = cols.get(4);
+							String eggStepString = col.text().replaceAll(",", "");
+							int eggSteps = Integer.parseInt(eggStepString);
+							System.out.println(eggSteps);
+							localPoke.setEggSteps(eggSteps);
 					}
-					typeList = typeList.substring(0, (typeList.length() - 2));
-					System.out.println("Type: " + typeList);
-					poke.setPokeTypes(typeList);
-					typeTableFound = true;
-				
-					//System.out.println("CLASSIFICATION TABLE"); Useful for debugging.
-					row = dexTable.selectXpath("//*[@id=\"content\"]/main/div[2]/table[4]/tbody/tr[4]/td[1]").first();
-					Element classificationCol = row.select("td").get(0);
-					String classification = classificationCol.text();
-					poke.setClassification(classification);
 					
-					row = dexTable.selectXpath("//*[@id=\"content\"]/main/div[2]/table[4]/tbody/tr[4]/td[2]").first();
-					Element heightCol = row.select("td").get(0);
-					String height = heightCol.text();
-					height = height.substring(0, (height.indexOf("\"") + 1));
-					poke.setHeight(height);
-					
-					row = dexTable.selectXpath("//*[@id=\"content\"]/main/div[2]/table[4]/tbody/tr[4]/td[3]").first();
-					Element weightCol = row.select("td").get(0);
-					String weight = weightCol.text();
-					weight = weight.substring(0, weight.indexOf("lbs") + 2);
-					weight = weight.replace("lb", " lbs");
-					poke.setWeight(weight);
-					
-					row = dexTable.selectXpath("//*[@id=\"content\"]/main/div[2]/table[4]/tbody/tr[4]/td[4]").first();
-					Element capRateCol = row.select("td").get(0);
-					double capRate = Double.parseDouble(capRateCol.text());
-					poke.setCapRate(capRate);
-					
-					row = dexTable.selectXpath("//*[@id=\"content\"]/main/div[2]/table[4]/tbody/tr[4]/td[5]").first();
-					Element eggStepsCol = row.select("td").get(0);
-					String eggStepString = eggStepsCol.text().replaceAll(",", "");
-					int eggSteps = Integer.parseInt(eggStepString);
-					poke.setEggSteps(eggSteps);
 				}
-				if(!(Objects.isNull(titleCol.text())) && titleCol.text().startsWith("Abilities:")) { //Means the ability table has been found.
-					//System.out.println("ABILITIES TABLE"); Useful for debugging.
-					row = dexTable.selectXpath("//*[@id=\"content\"]/main/div[2]/table[5]/tbody/tr[2]/td").first();
-					Elements abilityElements = row.select("b");
-					String abilityList = "";
-					boolean hiddenNext = false;
-					for(Element ability : abilityElements) {
-						if(ability.text().equals("Hidden Ability")) {
-							hiddenNext = true;
-							continue;
+				}
+				
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().startsWith("Abilities:")) {
+					for(int j = 0; j < (dexTableRows.size() - 1); j += 2) {
+						row = dexTableRows.select("tr").get((j + 1));
+						Elements cols = row.select("td");
+						int k = 0;
+						for(Element col : cols) {
+							System.out.println(k + col.text().toString());
+							k++;
 						}
-						else if(!hiddenNext) {
-							abilityList += (ability.text() + ", ");
-						} else if(hiddenNext) {
-							abilityList += ("(H) " + ability.text());
-						}
-					}
-					System.out.println(abilityList);
-					poke.setAbilities(abilityList);
-					
-					row = dexTable.select("tr").get(3);
-					Element evCol = row.select("td").get(2);
-					String evString = evCol.text();
-					if(evString.equals("")) {
-						int evAmt = 0;
-						evString = "";
-						poke.setEvRewardAmt(evAmt);
-						poke.setEvRewardAttr(evString);
-					} else {
-						if(poke.getPokeName().equals("Indeedee")) {
+						Element col = cols.get(0);
+						Element subTitle = dexTableRows.select("tr").get(j).select("td").first();
+						System.out.println(subTitle.text());
+						switch (j) {
+						case 0:
+							Elements abilityElements = col.select("b");
+							String abilityList = "";
+							boolean hiddenNext = false;
+							for(Element ability : abilityElements) {
+								if(ability.text().equals("Hidden Ability")) {
+									hiddenNext = true;
+									continue;
+								}
+								else if(!hiddenNext) {
+									abilityList += (ability.text() + ", ");
+								} else if(hiddenNext) {
+									abilityList += ("(H) " + ability.text());
+									hiddenNext = false;
+								}
+							}
+							System.out.println(abilityList);
+							localPoke.setAbilities(abilityList);
+							
+							break;
+							
+						case 1:
+							col = cols.get(2);
+							String evString = col.text();
+							int evAmt = 0;
+							if(evString.equals("")) {
+								evString = "";
+								localPoke.setEvRewardAmt(evAmt);
+								localPoke.setEvRewardAttr(evString);
+							} else {
+								if(poke.getPokeName().equals("Indeedee")) {
+									System.out.println(evString);
+									continue;
+								}
+							evAmt = Integer.parseInt(String.valueOf(evString.charAt(0)));
 							System.out.println(evString);
-							continue;
+							evString = evString.substring(2);
+							int garbageIndex = evString.indexOf("Point") - 1;
+							evString = evString.substring(0, garbageIndex);
+							localPoke.setEvRewardAmt(evAmt);
+							localPoke.setEvRewardAttr(evString);
+							}
+							System.out.println(evAmt + " " + evString);
+							break;
 						}
-					int evAmt = Integer.parseInt(String.valueOf(evString.charAt(0)));
-					System.out.println(evString);
-					evString = evString.substring(2);
-					int garbageIndex = evString.indexOf("Point") - 1;
-					evString = evString.substring(0, garbageIndex);
-					poke.setEvRewardAmt(evAmt);
-					poke.setEvRewardAttr(evString);
 					}
-					
-					abilityTableFound = true;
 				}
 				if(enabled && !(Objects.isNull(titleCol.text())) && titleCol.text().equals("Weakness")) {
 					System.out.println("WEAKNESS TABLE");
-					//row = dexTable.select("tr").get(1);
-					System.out.println("NYI");
+					Element typeRow = dexTableRows.select("tr").get((1));
+					Elements typeCols = typeRow.select("td");
+					Element weakRow = dexTableRows.select("tr").get(2);
+					Elements weakCols = weakRow.select("td");
+						
+					for (int k = 0; k < typeCols.size(); k++) {
+						String rawType = typeCols.get(k).select("a").attr("href");
+						String typeName = rawType.substring(rawType.indexOf("sv/") + 3, rawType.indexOf(".shtml"));
+						typeName = typeName.substring(0, 1).toUpperCase() + typeName.substring(1);
+						if(typeName.equals("Psychict")) {
+							typeName = "Psychic";
+						}
+						System.out.println(typeName + ": " + weakCols.get(k).text().substring(1));
+					}
 				}
 				
 				if(enabled && !(Objects.isNull(titleCol.text())) && titleCol.text().equals("Wild Hold Item")) {
 					System.out.println("Wild Hold Item Table");
-					//row = dexTable.select("tr").get(1);
-					System.out.println("NYI");
+					row = dexTableRows.select("tr").get(1);
+					Elements cols = row.select("td");
+					System.out.println("Wild Hold Item(s): " + cols.get(0).text());
+					Element innerTable = row.selectFirst("table");
+					Elements eggGroups = innerTable.select("a");
+					String eggGroupString = "";
+					for(Element eggGroup : eggGroups) {
+						eggGroupString += eggGroup.text() + ", ";
+						//String eggGroupHref = eggGroup.attr("href");
+						//String storedGroup = eggGroupHref.substring((eggGroupHref.indexOf("egg/") + 4), eggGroupHref.indexOf(".shtml"));
+						//storedGroup = storedGroup.substring(0, 1).toUpperCase() + storedGroup.substring(1) + ", ";
+						//eggGroupString += storedGroup;
+					}
+					eggGroupString = eggGroupString.substring(0, (eggGroupString.length() - 2));
+					System.out.println("Egg Groups: " + eggGroupString);
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Standard Level Up")) {
@@ -634,7 +682,7 @@ public class Pokemon {
 					levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
 					System.out.println(levelMoves);
 					overallMoves += levelMoves + ",";
-					poke.setLevelMoves(levelMoves);
+					localPoke.setLevelMoves(levelMoves);
 					levelMovesTableFound = true;
 				}
 				
@@ -659,7 +707,7 @@ public class Pokemon {
 					}
 					tmMoves = tmMoves.substring(0, tmMoves.length() - 1);
 					System.out.println(tmMoves);
-					poke.setTmMoves(tmMoves);
+					localPoke.setTmMoves(tmMoves);
 					overallMoves = overallMoves + "," + tmMoves;
 				}
 				
@@ -685,7 +733,7 @@ public class Pokemon {
 					}
 					eggMoves = eggMoves.substring(0, eggMoves.length() - 1);
 					System.out.println(eggMoves);
-					poke.setEggMoves(eggMoves);
+					localPoke.setEggMoves(eggMoves);
 					overallMoves = overallMoves + "," + eggMoves;
 				}
 				
@@ -711,7 +759,7 @@ public class Pokemon {
 					}
 					eggMoves = eggMoves.substring(0, eggMoves.length() - 1);
 					System.out.println(eggMoves);
-					poke.setEggMoves(eggMoves);
+					localPoke.setEggMoves(eggMoves);
 					overallMoves = overallMoves + "," + eggMoves;
 					/*
 					for(int j = 2; j < rows.size(); j++) {
@@ -735,13 +783,13 @@ public class Pokemon {
 					baseSpDef = Integer.parseInt(row.select("td").get(5).text());
 					baseSpd = Integer.parseInt(row.select("td").get(6).text());
 					bst = baseHP + baseAtk + baseDef + baseSpAtk + baseSpDef + baseSpd;
-					poke.setBaseHP(baseHP);
-					poke.setBaseAtk(baseAtk);
-					poke.setBaseDef(baseDef);
-					poke.setBaseSpAtk(baseSpAtk);
-					poke.setBaseSpDef(baseSpDef);
-					poke.setBaseSpd(baseSpd);
-					poke.setBst(bst);
+					localPoke.setBaseHP(baseHP);
+					localPoke.setBaseAtk(baseAtk);
+					localPoke.setBaseDef(baseDef);
+					localPoke.setBaseSpAtk(baseSpAtk);
+					localPoke.setBaseSpDef(baseSpDef);
+					localPoke.setBaseSpd(baseSpd);
+					localPoke.setBst(bst);
 				
 				}
 			}
@@ -758,8 +806,8 @@ public class Pokemon {
 			}
 				overallMoveset.add(overallMovesetString);
 			System.out.println(overallMoveset.toString().trim());
-			//poke.setotherMoves(otherMoves);
-			poke.setTotalMoves(overallMoveset.toString().trim());
+			//localPoke.setotherMoves(otherMoves);
+			localPoke.setTotalMoves(overallMoveset.toString().trim());
 			System.out.println(poke.toString());
 			/*
 			Pokemon dbSample = session.get(Pokemon.class, poke.getPokeName());
@@ -769,9 +817,11 @@ public class Pokemon {
 				continue;
 				}
 			*/
+			
 			session.beginTransaction();
-			session.update(poke);
+			session.saveOrUpdate(localPoke);
 			session.getTransaction().commit();
+			
 		}
 			
 			//TYPES in HREFS here: #content > main > div:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(2) > td.cen
