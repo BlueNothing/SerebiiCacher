@@ -55,11 +55,21 @@ public class Pokemon {
     /*
      * Not sure how I want to implement recording weaknesses, if at all.
      */
+     
+     @Column(name="weaknesses")
+     private String weaknesses;
+     
+     @Column(name="neutrals")
+     private String neutrals; //Neutral types.
+     
+     @Column(name="resistances")
+     private String resistances;
+     
+     @Column(name="immunities")
+     private String immunities;
     
-    /* Let's ignore this info for right now.
     @Column(name="eggGroups")
     private String eggGroups;
-    */
     
     /*
      * Locations are interesting data, but out of scope for initial implementation.
@@ -108,8 +118,9 @@ public class Pokemon {
     @Override
 	public int hashCode() {
 		return Objects.hash(abilities, baseAtk, baseDef, baseHP, baseSpAtk, baseSpDef, baseSpd, bst, capRate,
-				classification, eggMoves, eggSteps, evRewardAmt, evRewardAttr, height, levelMoves, otherMoves, pokeName,
-				pokeTypes, tmMoves, totalMoves, weight);
+				classification, eggGroups, eggMoves, eggSteps, evRewardAmt, evRewardAttr, height, immunities,
+				levelMoves, neutrals, otherMoves, pokeName, pokeTypes, resistances, tmMoves, totalMoves, weaknesses,
+				weight);
 	}
 
 	@Override
@@ -125,13 +136,15 @@ public class Pokemon {
 				&& baseHP == other.baseHP && baseSpAtk == other.baseSpAtk && baseSpDef == other.baseSpDef
 				&& baseSpd == other.baseSpd && bst == other.bst
 				&& Double.doubleToLongBits(capRate) == Double.doubleToLongBits(other.capRate)
-				&& Objects.equals(classification, other.classification) && Objects.equals(eggMoves, other.eggMoves)
-				&& eggSteps == other.eggSteps && evRewardAmt == other.evRewardAmt
-				&& Objects.equals(evRewardAttr, other.evRewardAttr) && Objects.equals(height, other.height)
-				&& Objects.equals(levelMoves, other.levelMoves) && Objects.equals(otherMoves, other.otherMoves)
-				&& Objects.equals(pokeName, other.pokeName) && Objects.equals(pokeTypes, other.pokeTypes)
+				&& Objects.equals(classification, other.classification) && Objects.equals(eggGroups, other.eggGroups)
+				&& Objects.equals(eggMoves, other.eggMoves) && eggSteps == other.eggSteps
+				&& evRewardAmt == other.evRewardAmt && Objects.equals(evRewardAttr, other.evRewardAttr)
+				&& Objects.equals(height, other.height) && Objects.equals(immunities, other.immunities)
+				&& Objects.equals(levelMoves, other.levelMoves) && Objects.equals(neutrals, other.neutrals)
+				&& Objects.equals(otherMoves, other.otherMoves) && Objects.equals(pokeName, other.pokeName)
+				&& Objects.equals(pokeTypes, other.pokeTypes) && Objects.equals(resistances, other.resistances)
 				&& Objects.equals(tmMoves, other.tmMoves) && Objects.equals(totalMoves, other.totalMoves)
-				&& Objects.equals(weight, other.weight);
+				&& Objects.equals(weaknesses, other.weaknesses) && Objects.equals(weight, other.weight);
 	}
 
 
@@ -400,15 +413,56 @@ public class Pokemon {
 		this.otherMoves = otherMoves;
 	}
 
+	public String getWeaknesses() {
+		return weaknesses;
+	}
+
+	public void setWeaknesses(String weaknesses) {
+		this.weaknesses = weaknesses;
+	}
+
+	public String getNeutrals() {
+		return neutrals;
+	}
+
+	public void setNeutrals(String neutrals) {
+		this.neutrals = neutrals;
+	}
+
+	public String getResistances() {
+		return resistances;
+	}
+
+	public void setResistances(String resistances) {
+		this.resistances = resistances;
+	}
+
+	public String getImmunities() {
+		return immunities;
+	}
+
+	public void setImmunities(String immunities) {
+		this.immunities = immunities;
+	}
+
+	public String getEggGroups() {
+		return eggGroups;
+	}
+
+	public void setEggGroups(String eggGroups) {
+		this.eggGroups = eggGroups;
+	}
+
 	@Override
 	public String toString() {
-		return "Pokemon [pokeName=" + pokeName + ", pokeTypes=" + pokeTypes + ", classification=" + classification + ", height="
-				+ height + ", weight=" + weight + ", capRate=" + capRate + ", eggSteps=" + eggSteps + ", abilities="
-				+ abilities + ", evRewardAmt=" + evRewardAmt + ", evRewardAttr=" + evRewardAttr + ", levelMoves="
-				+ levelMoves + ", tmMoves=" + tmMoves + ", otherMoves=" + otherMoves + ", eggMoves=" + eggMoves
-				+ ", totalMoves=" + totalMoves + ", baseHP=" + baseHP + ", baseAtk=" + baseAtk + ", baseDef=" + baseDef
-				+ ", baseSpAtk=" + baseSpAtk + ", baseSpDef=" + baseSpDef + ", baseSpd=" + baseSpd + ", bst=" + bst
-				+ "]";
+		return "Pokemon [pokeName=" + pokeName + ", pokeTypes=" + pokeTypes + ", classification=" + classification
+				+ ", height=" + height + ", weight=" + weight + ", capRate=" + capRate + ", eggSteps=" + eggSteps
+				+ ", abilities=" + abilities + ", evRewardAmt=" + evRewardAmt + ", evRewardAttr=" + evRewardAttr
+				+ ", weaknesses=" + weaknesses + ", neutrals=" + neutrals + ", resistances=" + resistances
+				+ ", immunities=" + immunities + ", eggGroups=" + eggGroups + ", levelMoves=" + levelMoves
+				+ ", tmMoves=" + tmMoves + ", eggMoves=" + eggMoves + ", otherMoves=" + otherMoves + ", totalMoves="
+				+ totalMoves + ", baseHP=" + baseHP + ", baseAtk=" + baseAtk + ", baseDef=" + baseDef + ", baseSpAtk="
+				+ baseSpAtk + ", baseSpDef=" + baseSpDef + ", baseSpd=" + baseSpd + ", bst=" + bst + "]";
 	}
     
 	public static void dexFinder(Session session) throws IOException {
@@ -485,11 +539,7 @@ public class Pokemon {
 			 * I iterate 'i' over the list of tables on the page until I find the one I'm looking for (by checking the headers, which are uniform where extant).
 			 * If I find the one I'm looking for, I update anchor to start from that table, process that table, and repeat the process for the next.
 			 * If I do not find the one I'm looking for before I run out of tables, I exit the loop in an unconventional way and report an issue to the debug pane, then continue to try and process the others.
-			 * 
-			 * TODO: Remember that the gen 9 new pokemon have a different data structure! Need to fix this.
-			 * Maybe set a boolean value for whether it's a new Pokemon, then adapt the xPath variables accordingly.
-			 */
-			boolean typeTableFound = false, abilityTableFound = false, levelMovesTableFound = false, statsTableFound = false;
+			*/
 			boolean enabled = true; //Used for 'experimental' or unimplemented features.
 			for(int i = 0; i < dexEntry.select("table.dextable").size(); i++) {
 				Element dexTable = dexEntry.select("table.dextable").get(0);
@@ -503,7 +553,7 @@ public class Pokemon {
 				Element row = dexTable.selectFirst("tr");
 				Element titleCol = row.selectFirst("td");
 				System.out.println("TITLE COLUMN: " + titleCol.text()); //Useful for debugging.
-				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Name")) { //First row has Attack Name, Attack Type, Category.
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Name")) {
 					for(int j = 0; j < (dexTableRows.size() - 1); j += 2) {
 						row = dexTableRows.select("tr").get((j + 1));
 						Elements cols = row.select("td");
@@ -517,6 +567,7 @@ public class Pokemon {
 						System.out.println(subTitle.text());
 						if(j == 0) {
 						Element typeCol = cols.get(cols.size() - 1);
+						System.out.println("Type Column: " + typeCol.toString());
 						Elements types = typeCol.select("a");
 						String typeList = "";
 						for(Element type : types) {
@@ -577,8 +628,7 @@ public class Pokemon {
 						Element col = cols.get(0);
 						Element subTitle = dexTableRows.select("tr").get(j).select("td").first();
 						System.out.println(subTitle.text());
-						switch (j) {
-						case 0:
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().contains("Abilities:")) {
 							Elements abilityElements = col.select("b");
 							String abilityList = "";
 							boolean hiddenNext = false;
@@ -596,21 +646,26 @@ public class Pokemon {
 							}
 							System.out.println(abilityList);
 							localPoke.setAbilities(abilityList);
+						}
 							
-							break;
-							
-						case 1:
-							col = cols.get(2);
+						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Experience Growth")) {
+							col = cols.get(cols.size() - 2);
+							System.out.println("EV Column: " + col.toString());
 							String evString = col.text();
+							System.out.println("EV String: " + evString);
 							int evAmt = 0;
 							if(evString.equals("")) {
 								evString = "";
 								localPoke.setEvRewardAmt(evAmt);
 								localPoke.setEvRewardAttr(evString);
 							} else {
-								if(poke.getPokeName().equals("Indeedee")) {
-									System.out.println(evString);
+								if(pokeName.equals("Indeedee")) {
+									localPoke.setEvRewardAmt(2);
+									localPoke.setEvRewardAttr("Sp. Attack [M]; Sp. Defense [F]");
 									continue;
+								}
+								if(evString.contains("Alolan") || evString.contains("Galarian") || evString.contains("Hisuian")) {
+									System.out.println("SPECIAL CASE");
 								}
 							evAmt = Integer.parseInt(String.valueOf(evString.charAt(0)));
 							System.out.println(evString);
@@ -621,7 +676,6 @@ public class Pokemon {
 							localPoke.setEvRewardAttr(evString);
 							}
 							System.out.println(evAmt + " " + evString);
-							break;
 						}
 					}
 				}
@@ -631,6 +685,10 @@ public class Pokemon {
 					Elements typeCols = typeRow.select("td");
 					Element weakRow = dexTableRows.select("tr").get(2);
 					Elements weakCols = weakRow.select("td");
+					String weaknesses = "";
+					String neutrals = "";
+					String immunities = "";
+					String resistances = "";
 						
 					for (int k = 0; k < typeCols.size(); k++) {
 						String rawType = typeCols.get(k).select("a").attr("href");
@@ -639,8 +697,49 @@ public class Pokemon {
 						if(typeName.equals("Psychict")) {
 							typeName = "Psychic";
 						}
+						String weakLine = weakCols.get(k).text().substring(1);
+						if(weakLine.equals("2") || weakLine.equals("4")){
+							weaknesses += typeName + ", ";
+						}
+						if(weakLine.equals("0.5") || weakLine.equals("0.25")) {
+							resistances += typeName + ", ";
+						}
+						if(weakLine.equals("0")) {
+							immunities += typeName + ", ";
+						}
+						if(weakLine.equals("1")) {
+							neutrals += typeName + ", ";
+						}
 						System.out.println(typeName + ": " + weakCols.get(k).text().substring(1));
 					}
+					if(weaknesses.length() > 0) {
+					weaknesses = weaknesses.substring(0, (weaknesses.length() - 2));
+					} else {
+						weaknesses = "None";
+					}
+					if(resistances.length() > 0) {
+					resistances = resistances.substring(0, (resistances.length() - 2));
+					} else {
+						resistances = "None";
+					}
+					if(immunities.length() > 0) {
+					immunities = immunities.substring(0, (immunities.length() - 2));
+					} else {
+						immunities = "None";
+					}
+					if(neutrals.length() > 0) {
+					neutrals = neutrals.substring(0, (neutrals.length() - 2));
+					} else {
+						neutrals = "None";
+					}
+					System.out.println("Weaknesses: " + weaknesses);
+					System.out.println("Resistances: " + resistances);
+					System.out.println("Immunities: " + immunities);
+					System.out.println("Neutral Types: " + neutrals);
+					localPoke.setWeaknesses(weaknesses);
+					localPoke.setResistances(resistances);
+					localPoke.setImmunities(immunities);
+					localPoke.setNeutrals(neutrals);
 				}
 				
 				if(enabled && !(Objects.isNull(titleCol.text())) && titleCol.text().equals("Wild Hold Item")) {
@@ -649,6 +748,11 @@ public class Pokemon {
 					Elements cols = row.select("td");
 					System.out.println("Wild Hold Item(s): " + cols.get(0).text());
 					Element innerTable = row.selectFirst("table");
+					if(Objects.isNull(innerTable)) {
+						String eggGroupString = poke.getPokeName() + " cannot breed";
+						localPoke.setEggGroups(eggGroupString);
+						continue;
+					}
 					Elements eggGroups = innerTable.select("a");
 					String eggGroupString = "";
 					for(Element eggGroup : eggGroups) {
@@ -659,6 +763,7 @@ public class Pokemon {
 						//eggGroupString += storedGroup;
 					}
 					eggGroupString = eggGroupString.substring(0, (eggGroupString.length() - 2));
+					localPoke.setEggGroups(eggGroupString);
 					System.out.println("Egg Groups: " + eggGroupString);
 				}
 				
@@ -683,7 +788,6 @@ public class Pokemon {
 					System.out.println(levelMoves);
 					overallMoves += levelMoves + ",";
 					localPoke.setLevelMoves(levelMoves);
-					levelMovesTableFound = true;
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Technical Machine Attacks")) {
@@ -819,30 +923,18 @@ public class Pokemon {
 			*/
 			
 			session.beginTransaction();
-			session.saveOrUpdate(localPoke);
+			session.merge(localPoke);
 			session.getTransaction().commit();
 			
 		}
 			
-			//TYPES in HREFS here: #content > main > div:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(2) > td.cen
-			//Row contains Classification, Height, Weight, Capture Rate, Base Egg Steps: #content > main > div:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(4)
-			//Abilities here: #content > main > div:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(2)
-			//EV data here: #content > main > div:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(4) > td:nth-child(3)
-			//BST and Stats here: #content > main > div:nth-child(2) > table:nth-child(23) > tbody > tr:nth-child(3)
 			/*
-			 * This table contains Level-Up Moves: #content > main > div:nth-child(2) > table:nth-child(18) > tbody
-			 * TM Moves: #content > main > div:nth-child(2) > table:nth-child(20) > tbody
-			 * Egg Moves: #content > main > div:nth-child(2) > table:nth-child(21)
-			 * OTHER Moves: 
-			 * Search for things structured like Moves (Things where the second row, first column of the table is "Attack Name");
-			 * Once found, add every instance.
 			 * How do we want to handle the move lists?
 			 * Current implementation calls for moves stored as Strings (for their names). Probably best to do this.
 			 * Best to one-to-many relation moves to the pokemon who can learn them.
 			 * 
 			 * 
 			 */
-		//}
 		session.close();
 		
 	}

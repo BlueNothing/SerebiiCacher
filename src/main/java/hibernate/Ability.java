@@ -265,7 +265,7 @@ public class Ability {
 			continue;
 		} else if(!(Objects.isNull(dbSample)) && !(dbSample.toString().equals(localAbility.toString()))) {
 			session.beginTransaction();
-			session.saveOrUpdate(localAbility);
+			session.merge(localAbility);
 			session.getTransaction().commit();
 		} else if (Objects.isNull(dbSample)){
 			session.beginTransaction();
