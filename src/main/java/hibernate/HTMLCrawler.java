@@ -38,7 +38,7 @@ public class HTMLCrawler {
 		 * String selection = "3";
 		Scanner scan = new Scanner(System.in);
 		//while(selection == null || !(selection.equals("0"))) {
-			//System.out.println("Please enter the number for your selection. To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To exit, type '0'. No other options are implemented at this time.");
+			//System.out.println("Please enter the number for your selection. To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To exit, type '0'. To initialize the whole database, type '9'. No other options are implemented at this time.");
 			//selection = scan.nextLine();
 			 * 
 			 */
@@ -51,16 +51,27 @@ public class HTMLCrawler {
 		case "1" :
 			session = HibernateUtil.getSessionFactory().openSession();
 			Pokemon.dexFinder(session);
+			session.close();
 			break;
 			
 		case "2" :
 			session = HibernateUtil.getSessionFactory().openSession();
 			Ability.abilityFinder(session);
+			session.close();
 			break;
 			
 		case "3" :
 			session = HibernateUtil.getSessionFactory().openSession();
 			Move.attackFinder(session);
+			session.close();
+			break;
+			
+		case "9" :
+			session = HibernateUtil.getSessionFactory().openSession();
+			Pokemon.dexFinder(session);
+			Ability.abilityFinder(session);
+			Move.attackFinder(session);
+			session.close();
 			break;
 			
 		default :

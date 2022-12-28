@@ -263,18 +263,20 @@ public class Ability {
 		if(!(Objects.isNull(dbSample)) && dbSample.toString().equals(localAbility.toString())) {
 			System.out.println(localAbility.getAbilityName() + ": already in database. There is nothing to do here.");
 			continue;
-		} else if(!(Objects.isNull(dbSample)) && !(dbSample.toString().equals(localAbility.toString()))) {
-			session.beginTransaction();
-			session.merge(localAbility);
-			session.getTransaction().commit();
 		} else if (Objects.isNull(dbSample)){
 			session.beginTransaction();
 			session.persist(localAbility);
 			session.getTransaction().commit();
+			continue;
 		}
+		else if(!(Objects.isNull(dbSample)) && !(dbSample.toString().equals(localAbility.toString()))) {
+			session.beginTransaction();
+			session.merge(localAbility);
+			session.getTransaction().commit();
+			continue;
+		} 
 		
 		}
-		session.close();
 	}
 
 	public Ability() {

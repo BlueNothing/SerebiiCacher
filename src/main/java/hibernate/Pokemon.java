@@ -273,10 +273,6 @@ public class Pokemon {
 		return otherMoves;
 	}
 
-	public void setotherMoves(String otherMoves) {
-		this.otherMoves = otherMoves;
-	}
-
 	public String getEggMoves() {
 		return eggMoves;
 	}
@@ -477,7 +473,7 @@ public class Pokemon {
 		Elements palDexElems = palDex.select("option");
 		List<String> palDexData = palDexElems.eachText();
 		ArrayList<String> palDexOverall = new ArrayList<String>();
-		List<Pokemon> results = new ArrayList<Pokemon>();
+		List<String> results = new ArrayList<String>();
 		System.out.println("Inital Pokedex data:");
 		/*
 		 */
@@ -498,22 +494,21 @@ public class Pokemon {
 	System.out.println("Dex stubs uploaded to DB.");
 	System.out.println("Testing DB contents!");
 	for(String s : palDexOverall) {
+		results.add(s); //The latter option may be more thorough, but keeping this one for now, because it should be *much* faster.
 		
-		Pokemon dbSample = session.get(Pokemon.class, s);
-		Pokemon pokemon = new Pokemon();
-		pokemon.setPokeName(s);
-		results.add(pokemon);
+		//Pokemon dbSample = session.get(Pokemon.class, s);
+		//String pokeName = dbSample.getPokeName();
+		//results.add(pokeName);
 	}
 	//results.forEach(outcome -> System.out.println(outcome)); This prints the dex data, but isn't needed right now.
 	dexFiller(session, results);
 	}
 	
-	public static void dexFiller(Session session, List<Pokemon> results) throws IOException {
+	public static void dexFiller(Session session, List<String> results) throws IOException {
 		//String validatorHQL = "FROM Pokemon";
 		//List<Pokemon> results = session.createQuery(validatorHQL).list();
-		for (Pokemon poke : results) {
-			System.out.println(poke.toString());
-			Pokemon localPoke = new Pokemon(poke.getPokeName());
+		for (String inputName : results) {
+			Pokemon localPoke = new Pokemon(inputName);
 			String levelMoves = "";
 			String tmMoves = "";
 			String eggMoves = "";
@@ -540,7 +535,6 @@ public class Pokemon {
 			 * If I find the one I'm looking for, I update anchor to start from that table, process that table, and repeat the process for the next.
 			 * If I do not find the one I'm looking for before I run out of tables, I exit the loop in an unconventional way and report an issue to the debug pane, then continue to try and process the others.
 			*/
-			boolean enabled = true; //Used for 'experimental' or unimplemented features.
 			for(int i = 0; i < dexEntry.select("table.dextable").size(); i++) {
 				Element dexTable = dexEntry.select("table.dextable").get(0);
 				try {
@@ -630,22 +624,23 @@ public class Pokemon {
 						System.out.println(subTitle.text());
 						if(!(Objects.isNull(subTitle.text())) && subTitle.text().contains("Abilities:")) {
 							Elements abilityElements = col.select("b");
-							String abilityList = "";
+							ArrayList<String> abilityList = new ArrayList<String>();
 							boolean hiddenNext = false;
-							for(Element ability : abilityElements) {
-								if(ability.text().equals("Hidden Ability")) {
+							for(Element abilityElem : abilityElements) {
+								if(abilityElem.text().equals("Hidden Ability")) {
 									hiddenNext = true;
 									continue;
 								}
 								else if(!hiddenNext) {
-									abilityList += (ability.text() + ", ");
+									abilityList.add(abilityElem.text());
 								} else if(hiddenNext) {
-									abilityList += ("(H) " + ability.text());
+									abilityList.add("(H) " + abilityElem.text());
 									hiddenNext = false;
 								}
 							}
-							System.out.println(abilityList);
-							localPoke.setAbilities(abilityList);
+							String abilities = abilityList.toString();
+							abilities = abilities.substring(1, abilities.length() - 1); //Remove the brackets.
+							localPoke.setAbilities(abilities);
 						}
 							
 						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Experience Growth")) {
@@ -679,7 +674,7 @@ public class Pokemon {
 						}
 					}
 				}
-				if(enabled && !(Objects.isNull(titleCol.text())) && titleCol.text().equals("Weakness")) {
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Weakness")) {
 					System.out.println("WEAKNESS TABLE");
 					Element typeRow = dexTableRows.select("tr").get((1));
 					Elements typeCols = typeRow.select("td");
@@ -742,14 +737,14 @@ public class Pokemon {
 					localPoke.setNeutrals(neutrals);
 				}
 				
-				if(enabled && !(Objects.isNull(titleCol.text())) && titleCol.text().equals("Wild Hold Item")) {
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Wild Hold Item")) {
 					System.out.println("Wild Hold Item Table");
 					row = dexTableRows.select("tr").get(1);
 					Elements cols = row.select("td");
 					System.out.println("Wild Hold Item(s): " + cols.get(0).text());
 					Element innerTable = row.selectFirst("table");
 					if(Objects.isNull(innerTable)) {
-						String eggGroupString = poke.getPokeName() + " cannot breed";
+						String eggGroupString = localPoke.getPokeName() + " cannot breed";
 						localPoke.setEggGroups(eggGroupString);
 						continue;
 					}
@@ -785,6 +780,15 @@ public class Pokemon {
 						}
 					}
 					levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					while(levelMoves.contains(",,")) {
+						levelMoves = levelMoves.replace(",,", ",");
+					}
+					while(levelMoves.startsWith(" ,")) {
+						levelMoves = levelMoves.substring(2);
+					}
+					if(levelMoves.endsWith(",")) {
+						levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					}
 					System.out.println(levelMoves);
 					overallMoves += levelMoves + ",";
 					localPoke.setLevelMoves(levelMoves);
@@ -810,6 +814,15 @@ public class Pokemon {
 						}
 					}
 					tmMoves = tmMoves.substring(0, tmMoves.length() - 1);
+					while(tmMoves.contains(",,")) {
+						tmMoves = tmMoves.replace(",,", ",");
+					}
+					while(tmMoves.startsWith(" ,")) {
+						tmMoves = tmMoves.substring(2);
+					}
+					if(tmMoves.endsWith(",")) {
+						tmMoves = tmMoves.substring(0, tmMoves.length() - 1);
+					}
 					System.out.println(tmMoves);
 					localPoke.setTmMoves(tmMoves);
 					overallMoves = overallMoves + "," + tmMoves;
@@ -836,6 +849,15 @@ public class Pokemon {
 						}
 					}
 					eggMoves = eggMoves.substring(0, eggMoves.length() - 1);
+					while(eggMoves.contains(",,")) {
+						eggMoves = eggMoves.replace(",,", ",");
+					}
+					while(eggMoves.startsWith(" ,")) {
+						eggMoves = eggMoves.substring(2);
+					}
+					if(eggMoves.endsWith(",")) {
+						eggMoves = eggMoves.substring(0, eggMoves.length() - 1);
+					}
 					System.out.println(eggMoves);
 					localPoke.setEggMoves(eggMoves);
 					overallMoves = overallMoves + "," + eggMoves;
@@ -855,16 +877,25 @@ public class Pokemon {
 							if(localCol.size() == 1) {
 								continue; //These are description rows, which are useless for a simple list of moves.
 							} else if (localCol.size() > 1){
-								eggMoves += localCol.get(0).text() + ",";
+								otherMoves += localCol.get(0).text() + ",";
 							} else{
 								continue;
 							}
 						}
 					}
-					eggMoves = eggMoves.substring(0, eggMoves.length() - 1);
-					System.out.println(eggMoves);
-					localPoke.setEggMoves(eggMoves);
-					overallMoves = overallMoves + "," + eggMoves;
+					otherMoves = otherMoves.substring(0, otherMoves.length() - 1);
+					while(otherMoves.contains(",,")) {
+						otherMoves = otherMoves.replace(",,", ",");
+					}
+					while(otherMoves.startsWith(" ,")) {
+						otherMoves = otherMoves.substring(2);
+					}
+					if(otherMoves.endsWith(",")) {
+						otherMoves = otherMoves.substring(0, otherMoves.length() - 1);
+					}
+					System.out.println(otherMoves);
+					localPoke.setOtherMoves(otherMoves);
+					overallMoves = overallMoves + "," + otherMoves;
 					/*
 					for(int j = 2; j < rows.size(); j++) {
 						Element move = rows.get(j);
@@ -909,10 +940,9 @@ public class Pokemon {
 				overallMovesetString = overallMovesetString.substring(overallMovesetString.indexOf(",") + 1);
 			}
 				overallMoveset.add(overallMovesetString);
-			System.out.println(overallMoveset.toString().trim());
+				localPoke.setTotalMoves(overallMoveset.toString().trim());
 			//localPoke.setotherMoves(otherMoves);
-			localPoke.setTotalMoves(overallMoveset.toString().trim());
-			System.out.println(poke.toString());
+				System.out.println(localPoke.getTotalMoves());
 			/*
 			Pokemon dbSample = session.get(Pokemon.class, poke.getPokeName());
 			 
@@ -926,6 +956,22 @@ public class Pokemon {
 			session.merge(localPoke);
 			session.getTransaction().commit();
 			
+			Pokemon dbSample = session.get(Pokemon.class, localPoke.getPokeName());
+			if(Objects.isNull(dbSample)) {
+				System.out.println("There is a new database entry!");
+				session.beginTransaction();
+				session.persist(localPoke);
+				session.getTransaction().commit();
+				continue;
+			} else if (!(dbSample.toString().equals(localPoke.toString()))){
+				System.out.println("There is nothing to do.");
+				continue;
+				} else {
+					session.beginTransaction();
+					session.merge(localPoke);
+					session.getTransaction().commit();
+					continue;
+				} 
 		}
 			
 			/*
@@ -935,8 +981,8 @@ public class Pokemon {
 			 * 
 			 * 
 			 */
-		session.close();
-		
+		Pokemon testPoke = session.get(Pokemon.class, "Gengar");
+		System.out.println(testPoke.toString());
 	}
     
 	public static void natDexFinder() throws IOException {
@@ -970,4 +1016,14 @@ public class Pokemon {
  * The program does *not* handle Pokemon well when they have substantial differences (subspecies like Alolan/Galarian/Hisuian forms, certain legendaries like the Creation Trio, the Genies, Meloetta, Hoopa, Calyrex, Squawkabilly, Indeedee, and possibly others.
  * In the absence of subspecies, the code provided *MOSTLY* works well for processing Serebii's tables into a database.
  * Formatting on the movelist tables is screwy for reasons I don't entirely grasp as well, but it's probably an easy fix. 
+ * 
+ * More Thorough Analysis - 
+ * Note - Meowth and Calyrex have no classification.
+ * Pikachu and Raichu have issues where Volt Tackle and Fly are recorded improperly. Are they the only ones? No, Pichu has it... 
+ * Charmeleon's Egg Moves have one that isn't separated from the rest by a comma as expected. Is this the only column where this issue happens? Unsure, but Sunflora and Slowking have this issue in Egg Moves, too.
+ * Definitely not the only column, the Legendary Birds have this issue in the TM section.
+ * 
+ * A lot of entries have unnecessary commas at the end.
+ * 
+ * The moves table needs extensive reformatting.
 */
