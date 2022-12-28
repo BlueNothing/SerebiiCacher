@@ -962,3 +962,12 @@ public class Pokemon {
 	}
 
 }
+
+
+/*
+ * Thinking out loud - What are the major limitations of this program at present?
+ * The program handles convergent species fine, because they're essentially different in the ways the database scans for.
+ * The program does *not* handle Pokemon well when they have substantial differences (subspecies like Alolan/Galarian/Hisuian forms, certain legendaries like the Creation Trio, the Genies, Meloetta, Hoopa, Calyrex, Squawkabilly, Indeedee, and possibly others.
+ * In the absence of subspecies, the code provided works well for processing Serebii's tables into a database.
+ * Formatting on the movelist tables is screwy for reasons I don't entirely grasp as well, but it's probably an easy fix. 
+*/
