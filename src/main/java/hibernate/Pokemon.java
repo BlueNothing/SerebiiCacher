@@ -835,19 +835,13 @@ public class Pokemon {
 					eggMoves = "";
 					for(int k = 0; k < rows.size(); k++) {
 						Element localRow = rows.get(k);
-						if(localRow.text().equals("Egg Moves Table") || localRow.text().equals("Level Attack Name Type Cat. Att. Acc. PP Effect %")) //These are header rows, which are out of scope.
-							continue;
-							else {
-							Elements localCol = localRow.select("td"); //These are where all of the right types of data are found.
-							if(localCol.size() == 1) {
-								continue; //These are description rows, which are useless for a simple list of moves.
-							} else if (localCol.size() > 1){
+						Elements localCol = localRow.select("td");
+						if(!(localRow.text().equals("Egg Moves Table") || localRow.text().equals("Level Attack Name Type Cat. Att. Acc. PP Effect %") || localCol.size() < 3)) { //These are header rows, which are out of scope.
 								eggMoves += localCol.get(0).text() + ",";
 							} else{
 								continue;
 							}
 						}
-					}
 					eggMoves = eggMoves.substring(0, eggMoves.length() - 1);
 					while(eggMoves.contains(",,")) {
 						eggMoves = eggMoves.replace(",,", ",");
@@ -870,19 +864,14 @@ public class Pokemon {
 					otherMoves = "";
 					for(int k = 0; k < rows.size(); k++) {
 						Element localRow = rows.get(k);
-						if(localRow.text().equals("Pre-Evolution Only Moves") || localRow.text().equals("Move Reminder Only Attacks") || localRow.text().equals("Special Moves") || localRow.text().equals("Level Attack Name Type Cat. Att. Acc. PP Effect %")) //These are header rows, which are out of scope.
+						Elements localCol = localRow.select("td"); //These are where all of the right types of data are found.
+						if(localRow.text().equals("Pre-Evolution Only Moves") || localRow.text().equals("Move Reminder Only Attacks") || localRow.text().equals("Special Moves") || localRow.text().equals("Level Attack Name Type Cat. Att. Acc. PP Effect %") || localCol.size() < 3) { //These are header rows, which are out of scope.
 							continue;
+						}
 							else {
-							Elements localCol = localRow.select("td"); //These are where all of the right types of data are found.
-							if(localCol.size() == 1) {
-								continue; //These are description rows, which are useless for a simple list of moves.
-							} else if (localCol.size() > 1){
 								otherMoves += localCol.get(0).text() + ",";
-							} else{
-								continue;
 							}
 						}
-					}
 					otherMoves = otherMoves.substring(0, otherMoves.length() - 1);
 					while(otherMoves.contains(",,")) {
 						otherMoves = otherMoves.replace(",,", ",");
@@ -940,6 +929,14 @@ public class Pokemon {
 				overallMovesetString = overallMovesetString.substring(overallMovesetString.indexOf(",") + 1);
 			}
 				overallMoveset.add(overallMovesetString);
+				if(Objects.isNull(eggMoves) || eggMoves.isBlank() || eggMoves.equals("")) {
+					eggMoves = "None";
+					localPoke.setEggMoves(eggMoves);
+				}
+				if(Objects.isNull(otherMoves) || otherMoves.isBlank()) {
+					otherMoves = "None";
+					localPoke.setOtherMoves(otherMoves);
+				}
 				localPoke.setTotalMoves(overallMoveset.toString().trim());
 			//localPoke.setotherMoves(otherMoves);
 				System.out.println(localPoke.getTotalMoves());
@@ -981,7 +978,7 @@ public class Pokemon {
 			 * 
 			 * 
 			 */
-		Pokemon testPoke = session.get(Pokemon.class, "Gengar");
+		Pokemon testPoke = session.get(Pokemon.class, "Rotom");
 		System.out.println(testPoke.toString());
 	}
     
