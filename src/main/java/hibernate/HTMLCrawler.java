@@ -17,16 +17,7 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 public class HTMLCrawler {
-	/*
-	 * Refactor this class to include ~7 methods.
-	 * dexFinder: Given nothing, pull the names of the Pokemon in the Paldea Pokedex, add them to the database as stubs if not present. This method will be adapted to add any Pokemon to the database.
-	 * dexFiller: Scrolls through the database, populating null fields with values where appropriate (using 0 when a value has been searched but is empty or absent).
-	 * abilityFinder: Given nothing, pulls the names of the abilities in Serebii's AbilityDex, adding them to the database as stubs if not present.
-	 * abilityFiller: Scrolls through the database, populating null fields and filling stubs for the AblityDex.
-	 * attackFinder: Given nothing, pulls the names of the attacks in Serebii's AttackDex, adding them to the database as stubs.
-	 * attackFiller: Scrolls through the database, populating null fields and filling stubs for the AttackDex.
-	 * main: Calls these methods.
-	 */
+	//Might be cool to extend the functionality of this interface to do more stuff.
 	
 
 	
@@ -42,8 +33,8 @@ public class HTMLCrawler {
 			//selection = scan.nextLine();
 			 * 
 			 */
-		int selection = 1;
-		switch (String.valueOf(selection)){
+		int selection = 0;
+		switch (String.valueOf(selection)){ //This set of options should be used for populating the database.
 		case "0" :
 			System.out.println("Thank you for using the Serebii Cacher. Ending execution.");
 			break;
@@ -66,6 +57,7 @@ public class HTMLCrawler {
 			session.close();
 			break;
 			
+			
 		case "9" :
 			session = HibernateUtil.getSessionFactory().openSession();
 			Pokemon.dexFinder(session);
@@ -80,5 +72,64 @@ public class HTMLCrawler {
 			System.out.println("Handy hint: Remember to just type the number, not the quotes surrounding it.");
 			break;
 		}
+		ArrayList<String> testMoves = new ArrayList<String>();
+		testMoves.add("Ancient Power");
+		testMoves.add("Belly Drum");
+		ArrayList<Pokemon> testCollision = intersectionFinder(session, "Blaze", testMoves);
+		ArrayList<String> outputList = new ArrayList<String>();
+		for(Pokemon p : testCollision) {
+			outputList.add(p.getPokeName());
+		}
+		System.out.println("Overall Collision Set: " + outputList.toString());
+		
+		//Options should also be provided for working with the *cached* database using certain prebuilt forms of queries.
+		}
+
+
+public static ArrayList<Pokemon> intersectionFinder(Session session, ArrayList<String> moves){
+	/*
+	 * General strategy: Find all the Pokemon that can learn each move in the list.
+	 * If there are any Pokemon who can learn all of the moves in the list, they're the results, return them, else "None".
+	 */
+	ArrayList<List<Pokemon>> moveListSet = new ArrayList<List<Pokemon>>();
+	for(String moveName : moves) {
+		String validatorHQL = "FROM Pokemon WHERE OVERALLMOVES CONTAINS '%" + moveName + "%';";
+		List<Pokemon> results = session.createQuery(validatorHQL).list();
+	}
+	ArrayList<Pokemon> results = new ArrayList<Pokemon>();
+	
+	return results;
+}
+
+public static ArrayList<Pokemon> intersectionFinder(Session session, String abilityName, ArrayList<String> moves){
+	/*
+	 * General strategy: Find all the Pokemon that can learn each move in the list.
+	 * If there are any Pokemon who can learn all of the moves in the list, they're the results, return them, else "None".
+	 */
+	ArrayList<Pokemon> results = new ArrayList<Pokemon>(); //Here's where all the valid collisions go.
+	String abilitiesHQL = "FROM Pokemon as poke WHERE poke.abilities LIKE '%" + abilityName + "%'";
+	List<Pokemon> abilityOutput = session.createQuery(abilitiesHQL).list(); //Find the Pokemon with the chosen ability.
+	//System.out.println(abilityOutput.toString()); TESTING USE ONLY.
+	ArrayList<List<Pokemon>> moveOutputsList = new ArrayList<List<Pokemon>>();
+	for(String moveName : moves) {
+		String moveFinderHQL = "FROM Pokemon as poke WHERE poke.totalMoves LIKE '%" + moveName + "%'";
+		List<Pokemon> moveOutput = session.createQuery(moveFinderHQL).list(); //Add all Pokemon who can have the chosen move to their own list.
+		//System.out.println(moveOutput.toString());
+		moveOutputsList.add(moveOutput);
+	}
+	for(Pokemon p : abilityOutput) {
+		boolean validResult = true;
+		for(int i = 0; i < moveOutputsList.size(); i++) {
+			if(!(moveOutputsList.get(i).contains(p))) {
+				validResult = false;
+			}
+		}
+		if(validResult) {
+			results.add(p);
 		}
 	}
+	
+	return results;
+}
+}
+

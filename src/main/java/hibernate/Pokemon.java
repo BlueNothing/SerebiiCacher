@@ -1016,11 +1016,8 @@ public class Pokemon {
  * 
  * More Thorough Analysis - 
  * Note - Meowth and Calyrex have no classification.
- * Pikachu and Raichu have issues where Volt Tackle and Fly are recorded improperly. Are they the only ones? No, Pichu has it... 
  * Charmeleon's Egg Moves have one that isn't separated from the rest by a comma as expected. Is this the only column where this issue happens? Unsure, but Sunflora and Slowking have this issue in Egg Moves, too.
  * Definitely not the only column, the Legendary Birds have this issue in the TM section.
- * 
- * A lot of entries have unnecessary commas at the end.
  * 
  * The moves table needs extensive reformatting.
 */
