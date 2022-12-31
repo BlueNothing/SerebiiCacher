@@ -25,14 +25,11 @@ public class HTMLCrawler {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.close();
 		session = HibernateUtil.getSessionFactory().openSession();
-		/*
-		 * String selection = "3";
+		//String selection = "3";
 		Scanner scan = new Scanner(System.in);
 		//while(selection == null || !(selection.equals("0"))) {
 			//System.out.println("Please enter the number for your selection. To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To exit, type '0'. To initialize the whole database, type '9'. No other options are implemented at this time.");
 			//selection = scan.nextLine();
-			 * 
-			 */
 		int selection = 0;
 		switch (String.valueOf(selection)){ //This set of options should be used for populating the database.
 		case "0" :
@@ -72,15 +69,32 @@ public class HTMLCrawler {
 			System.out.println("Handy hint: Remember to just type the number, not the quotes surrounding it.");
 			break;
 		}
+		System.out.println("Testing movelist collision detection for the case with a specified ability.");
+		System.out.println("Please type the exact name of the ability without following punctuation (so \"Zero to Hero\" would be Zero to Hero, Adaptability would be Adaptability, etc.");
+		String testAbility = scan.nextLine();
 		ArrayList<String> testMoves = new ArrayList<String>();
-		testMoves.add("Ancient Power");
-		testMoves.add("Belly Drum");
-		ArrayList<Pokemon> testCollision = intersectionFinder(session, "Blaze", testMoves);
+		System.out.println("Do you want to add a move to check for collision with?");
+		String doProceed = scan.nextLine();
+		while(!(doProceed.equals("No"))) {
+			if(doProceed.equals("Yes")) {
+				System.out.println("Please enter the exact name of one of the moves you want to find a collision for.");
+				String moveName = scan.nextLine();
+				if(!(moveName.isBlank()) && !(moveName.equals("Yes") && !(moveName.equals("No")))) {
+					testMoves.add(moveName);
+					System.out.println("Added " + moveName + ". Continue?");
+					doProceed = scan.nextLine();
+		}
+		}
+		}
+		//testMoves = new ArrayList<String>();
+		//testMoves.add("Ancient Power");
+		//testMoves.add("Belly Drum");
+		ArrayList<Pokemon> testCollision = intersectionFinder(session, testAbility, testMoves);
 		ArrayList<String> outputList = new ArrayList<String>();
 		for(Pokemon p : testCollision) {
 			outputList.add(p.getPokeName());
 		}
-		System.out.println("Overall Collision Set: " + outputList.toString());
+		System.out.println("Overall Collision Set - The following Pokemon have the specified ability " + testAbility + " and the specifed moves" + testMoves.toString() + " : "+ outputList.toString());
 		
 		//Options should also be provided for working with the *cached* database using certain prebuilt forms of queries.
 		}
