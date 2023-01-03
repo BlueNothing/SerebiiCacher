@@ -17,7 +17,12 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 public class HTMLCrawler {
-	//Might be cool to extend the functionality of this interface to do more stuff.
+	/*
+	 * Alright, there are a few things I can do here that are relatively important.
+	 * First: Set it up so that the database can be updated, upon request.
+	 * Second: Set it up so that unless the databases should be updated, the user works with the *cached* DB.
+	 * Third: Need to figure out an elegant way to deal with alternate forms.
+	 */
 	
 
 	
@@ -25,58 +30,74 @@ public class HTMLCrawler {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.close();
 		session = HibernateUtil.getSessionFactory().openSession();
-		//String selection = "3";
+		String testAbility = "";
+		ArrayList<Pokemon> testCollision = new ArrayList<Pokemon>();
+		
+		System.out.println("Do you wish to update the database? Y/N");
 		Scanner scan = new Scanner(System.in);
-		//while(selection == null || !(selection.equals("0"))) {
-			//System.out.println("Please enter the number for your selection. To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To exit, type '0'. To initialize the whole database, type '9'. No other options are implemented at this time.");
-			//selection = scan.nextLine();
-		int selection = 0;
-		switch (String.valueOf(selection)){ //This set of options should be used for populating the database.
-		case "0" :
-			System.out.println("Thank you for using the Serebii Cacher. Ending execution.");
-			break;
-			
-		case "1" :
-			session = HibernateUtil.getSessionFactory().openSession();
-			Pokemon.dexFinder(session);
-			session.close();
-			break;
-			
-		case "2" :
-			session = HibernateUtil.getSessionFactory().openSession();
-			Ability.abilityFinder(session);
-			session.close();
-			break;
-			
-		case "3" :
-			session = HibernateUtil.getSessionFactory().openSession();
-			Move.attackFinder(session);
-			session.close();
-			break;
-			
-			
-		case "9" :
-			session = HibernateUtil.getSessionFactory().openSession();
-			Pokemon.dexFinder(session);
-			Ability.abilityFinder(session);
-			Move.attackFinder(session);
-			session.close();
-			break;
-			
-		default :
-			System.out.println("Invalid input, please try again.");
-			System.out.println("Your input was: " + selection);
-			System.out.println("Handy hint: Remember to just type the number, not the quotes surrounding it.");
-			break;
+		String doUpdate = scan.nextLine();
+		if(doUpdate.equalsIgnoreCase("Y")) {
+			int selection = 10;
+			while(selection != 0) {
+			System.out.println("Please select which databases to update by typing one of the following numbers.");
+			System.out.println("To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To update all 3, type '9'. To exit, type '0'.");
+			selection = scan.nextInt();
+			switch (String.valueOf(selection)){ //This set of options should be used for populating the database.
+			case "0" :
+				System.out.println("Thank you for using the Serebii Cacher. Ending execution.");
+				break;
+				
+			case "1" :
+				session = HibernateUtil.getSessionFactory().openSession();
+				Pokemon.dexFinder(session);
+				session.close();
+				break;
+				
+			case "2" :
+				session = HibernateUtil.getSessionFactory().openSession();
+				Ability.abilityFinder(session);
+				session.close();
+				break;
+				
+			case "3" :
+				session = HibernateUtil.getSessionFactory().openSession();
+				Move.attackFinder(session);
+				session.close();
+				break;
+				
+				
+			case "9" :
+				session = HibernateUtil.getSessionFactory().openSession();
+				Pokemon.dexFinder(session);
+				Ability.abilityFinder(session);
+				Move.attackFinder(session);
+				session.close();
+				break;
+				
+			default :
+				System.out.println("Invalid input, please try again.");
+				System.out.println("Your input was: " + selection);
+				System.out.println("Handy hint: Remember to just type the number, not the quotes surrounding it.");
+				break;
+			}
 		}
+		}
+		System.out.println("Do you want to find a moveset collision? Y/N");
+		String doCollide = scan.nextLine();
+		if(doCollide.equalsIgnoreCase("Y")) {
+		System.out.println("Do you want to include an ability in your collision check? Y/N");
+		String withAbility = scan.nextLine();
+		
+		if(withAbility.equalsIgnoreCase("Y")) {
 		System.out.println("Testing movelist collision detection for the case with a specified ability.");
 		System.out.println("Please type the exact name of the ability without following punctuation (so \"Zero to Hero\" would be Zero to Hero, Adaptability would be Adaptability, etc.");
-		String testAbility = scan.nextLine();
+		testAbility = scan.nextLine();
+		}
 		ArrayList<String> testMoves = new ArrayList<String>();
-		System.out.println("Do you want to add a move to check for collision with?");
+		System.out.println("Do you want to add a move to check for collision with? Y/N");
 		String doProceed = scan.nextLine();
-		while(!(doProceed.equals("No"))) {
-			if(doProceed.equals("Yes")) {
+		while(!(doProceed.equalsIgnoreCase("N"))) {
+			if(doProceed.equalsIgnoreCase("Y")) {
 				System.out.println("Please enter the exact name of one of the moves you want to find a collision for.");
 				String moveName = scan.nextLine();
 				if(!(moveName.isBlank()) && !(moveName.equals("Yes") && !(moveName.equals("No")))) {
@@ -84,20 +105,28 @@ public class HTMLCrawler {
 					System.out.println("Added " + moveName + ". Continue?");
 					doProceed = scan.nextLine();
 		}
+			} else {
+				System.out.println("Please type Y or N");
 		}
 		}
-		//testMoves = new ArrayList<String>();
-		//testMoves.add("Ancient Power");
-		//testMoves.add("Belly Drum");
-		ArrayList<Pokemon> testCollision = intersectionFinder(session, testAbility, testMoves);
+		if(withAbility.equalsIgnoreCase("Y") && !(testAbility.isBlank())) {
+				testCollision = intersectionFinder(session, testAbility, testMoves);
+		} else {
+			testCollision = intersectionFinder(session, testMoves);
+		}
+		
 		ArrayList<String> outputList = new ArrayList<String>();
 		for(Pokemon p : testCollision) {
 			outputList.add(p.getPokeName());
 		}
-		System.out.println("Overall Collision Set - The following Pokemon have the specified ability " + testAbility + " and the specifed moves" + testMoves.toString() + " : "+ outputList.toString());
 		
-		//Options should also be provided for working with the *cached* database using certain prebuilt forms of queries.
+		if(withAbility.equalsIgnoreCase("Y") && !(testAbility.isBlank())) {
+		System.out.println("Overall Collision Set - The following Pokemon have the specified ability " + testAbility + " and the specifed moves" + testMoves.toString() + " : "+ outputList.toString());
+		} else {
+			System.out.println("Overall Collision Set - The following Pokemon have the specifed move combination: " + testMoves.toString() + " : "+ outputList.toString());
 		}
+	}
+	}
 
 
 public static ArrayList<Pokemon> intersectionFinder(Session session, ArrayList<String> moves){
@@ -105,13 +134,27 @@ public static ArrayList<Pokemon> intersectionFinder(Session session, ArrayList<S
 	 * General strategy: Find all the Pokemon that can learn each move in the list.
 	 * If there are any Pokemon who can learn all of the moves in the list, they're the results, return them, else "None".
 	 */
-	ArrayList<List<Pokemon>> moveListSet = new ArrayList<List<Pokemon>>();
+	ArrayList<List<Pokemon>> moveListSet = new ArrayList<List<Pokemon>>(); //This list contains all the movelists that satisfy each component query.
 	for(String moveName : moves) {
-		String validatorHQL = "FROM Pokemon WHERE OVERALLMOVES CONTAINS '%" + moveName + "%';";
-		List<Pokemon> results = session.createQuery(validatorHQL).list();
+		String moveFinderHQL = "FROM Pokemon as poke WHERE poke.totalMoves LIKE '%" + moveName + "%'";
+		List<Pokemon> foundPokemon = session.createQuery(moveFinderHQL).list();
+		moveListSet.add(foundPokemon);
 	}
 	ArrayList<Pokemon> results = new ArrayList<Pokemon>();
-	
+	for(Pokemon p : moveListSet.get(0)) { //Any collision that satisfies the constraint must be in each list. As such, searching each entry in the first list is a fine strategy, because all valid collisions have to be in there.
+		boolean validResult = true;
+		for(int i = 0; i < moveListSet.size(); i++) {
+			if(!(moveListSet.get(i).contains(p))) {
+				validResult = false;
+			}
+		}
+		if(validResult) {
+			results.add(p);
+		}
+	}
+	if(results.size() == 0) {
+		results.add(new Pokemon("None"));
+	}
 	return results;
 }
 
@@ -124,23 +167,18 @@ public static ArrayList<Pokemon> intersectionFinder(Session session, String abil
 	String abilitiesHQL = "FROM Pokemon as poke WHERE poke.abilities LIKE '%" + abilityName + "%'";
 	List<Pokemon> abilityOutput = session.createQuery(abilitiesHQL).list(); //Find the Pokemon with the chosen ability.
 	//System.out.println(abilityOutput.toString()); TESTING USE ONLY.
-	ArrayList<List<Pokemon>> moveOutputsList = new ArrayList<List<Pokemon>>();
-	for(String moveName : moves) {
-		String moveFinderHQL = "FROM Pokemon as poke WHERE poke.totalMoves LIKE '%" + moveName + "%'";
-		List<Pokemon> moveOutput = session.createQuery(moveFinderHQL).list(); //Add all Pokemon who can have the chosen move to their own list.
-		//System.out.println(moveOutput.toString());
-		moveOutputsList.add(moveOutput);
-	}
-	for(Pokemon p : abilityOutput) {
+	ArrayList<Pokemon> moveResults = intersectionFinder(session, moves); //Containing the simpler method improves uniformity.
+	for(Pokemon p : abilityOutput) { //For each Pokemon with the specified ability...
 		boolean validResult = true;
-		for(int i = 0; i < moveOutputsList.size(); i++) {
-			if(!(moveOutputsList.get(i).contains(p))) {
-				validResult = false;
-			}
+		if(!(moveResults.contains(p))){ //If none of the Pokemon in the moveset collision have the ability, this is an invalid collision. 
+			validResult = false;
 		}
-		if(validResult) {
+		if(validResult) { //If at least one Pokemon in the moveset collision has the ability, this is a valid collision.
 			results.add(p);
 		}
+	}
+	if(results.size() == 0) {
+		results.add(new Pokemon("None"));
 	}
 	
 	return results;
