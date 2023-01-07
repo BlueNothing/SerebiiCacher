@@ -19,9 +19,8 @@ import org.jsoup.select.Elements;
 public class HTMLCrawler {
 	/*
 	 * Alright, there are a few things I can do here that are relatively important.
-	 * First: Set it up so that the database can be updated, upon request.
-	 * Second: Set it up so that unless the databases should be updated, the user works with the *cached* DB.
-	 * Third: Need to figure out an elegant way to deal with alternate forms.
+	 * Need to figure out an elegant way to deal with alternate forms.
+	 * Need to start implementing a front-end, REST, and refactoring to better Persistence implementations.
 	 */
 	
 
@@ -32,7 +31,7 @@ public class HTMLCrawler {
 		session = HibernateUtil.getSessionFactory().openSession();
 		String testAbility = "";
 		ArrayList<Pokemon> testCollision = new ArrayList<Pokemon>();
-		
+		session = HibernateUtil.getSessionFactory().openSession();
 		System.out.println("Do you wish to update the database? Y/N");
 		Scanner scan = new Scanner(System.in);
 		String doUpdate = scan.nextLine();
@@ -182,6 +181,15 @@ public static ArrayList<Pokemon> intersectionFinder(Session session, String abil
 	}
 	
 	return results;
+}
+
+public static void samplePokeData (Session session) {
+	try {
+		Pokemon.dexFinder(session);
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
 }
 }
 

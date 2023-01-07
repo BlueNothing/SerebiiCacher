@@ -467,6 +467,11 @@ public class Pokemon {
 		 * Every Pokedex entry is repeated, but only one instance of each dex entry is numbered, and outside of the Paldea dex, it's numbered with its National Dex entry.
 		 * Inside the Paldea dex, they're numbered with their local dex number.
 		 * Overall, then, there's at least one instance of every pokemon's dex entry that's prefaced with a number.
+		 * 
+		 * Now, we get into the alternate forms (Origin, Alolan, Galarian, Hisuian, Therian, etc, etc).
+		 * Alternate forms are characterized by a few distinct properties - 
+		 * Alternate forms may have a different type, a different classification, different weaknesses, different abilities, a different moveset, different stats, and/or different EVs.
+		 * 
 		*/
 		
 		Document palDex = Jsoup.connect("https://www.serebii.net/pokedex-sv/").get();
@@ -508,7 +513,19 @@ public class Pokemon {
 		//String validatorHQL = "FROM Pokemon";
 		//List<Pokemon> results = session.createQuery(validatorHQL).list();
 		for (String inputName : results) {
+			/*if(!((inputName.equals("Meowth") || inputName.equals("Tauros") || inputName.equals("Raichu") || inputName.equals("Wooper") || inputName.equals("Giratina")))) {
+				continue;
+			}
+			*/
 			Pokemon localPoke = new Pokemon(inputName);
+			Pokemon localPokeAlola = null; //Several Pokemon have Alolan regional forms.
+			Pokemon localPokeGalar = null; //Several Pokemon have Galarian regional forms.
+			Pokemon localPokeHisui = null; //Several Pokemon have Hisuian regional forms.
+			Pokemon localPokePaldea = null; //A few Pokemon have Paldean-exclusive forms.
+			Pokemon localPokeOther1 = null; //Several Pokemon have forms which are not region-specific, like the Creation Trio, the Genie Trio, Lycanroc, Indeedee, and Toxtricity.
+			Pokemon localPokeOther2 = null; //Some Pokemon, including Tauros, have multiple forms that are not neatly subsumed under the above categories; most notably, Paldean Tauros has two variant breeds.
+			ArrayList<Pokemon> localPokeList = new ArrayList<Pokemon>();
+			
 			String levelMoves = "";
 			String tmMoves = "";
 			String eggMoves = "";
@@ -560,6 +577,53 @@ public class Pokemon {
 						Element subTitle = dexTableRows.select("tr").get(j).select("td").first();
 						System.out.println(subTitle.text());
 						if(j == 0) {
+						Element typeData = cols.select(".cen").get(0);
+						if(!Objects.isNull(typeData)) {
+							//System.out.println(typeData.html());
+							System.out.println(typeData.text());
+							if(typeData.text().contains("Normal")) {
+								Elements typeTable = typeData.select("tr");
+								for(Element types : typeTable) {
+									/*
+									 * Element typeCol = cols.get(cols.size() - 1);
+						System.out.println("Type Column: " + typeCol.toString());
+						Elements types = typeCol.select("a");
+						String typeList = "";
+						for(Element type : types) {
+							String typeHref = type.attr("href");
+							//System.out.println(typeHref);
+							String storedType = typeHref.substring((typeHref.indexOf("sv/") + 3), typeHref.indexOf(".shtml"));
+							storedType = storedType.substring(0, 1).toUpperCase() + storedType.substring(1) + ", ";
+							typeList += storedType;
+						}
+						typeList = typeList.substring(0, (typeList.length() - 2)); //This may behave erratically for things that have conditional types like Megas or Regional Forms.
+						System.out.println("Type: " + typeList);
+						localPoke.setPokeTypes(typeList);
+									 */
+									System.out.println(types.text());
+								}
+								
+								if(typeData.text().contains("Paldean")) {
+									localPokePaldea = new Pokemon(localPoke.getPokeName());
+									localPokePaldea.setPokeName("Paldean " + localPokePaldea.getPokeName());
+									System.out.println(localPokePaldea.getPokeName());
+								}
+								if(typeData.text().contains("Hisuian")) {
+									localPokeHisui = new Pokemon(localPoke.getPokeName());
+									localPokeHisui.setPokeName("Hisuian " + localPokeHisui.getPokeName());
+									System.out.println(localPokeHisui.getPokeName());
+								}
+								if(typeData.text().contains("Galarian")) {
+									localPokeGalar = new Pokemon(localPoke.getPokeName());
+									localPokeGalar.setPokeName("Galarian " + localPokeGalar.getPokeName());
+									System.out.println(localPokeGalar.getPokeName());
+								}
+								if(typeData.text().contains("Alolan")) {
+									localPokeAlola = new Pokemon(localPoke.getPokeName());
+									localPokeAlola.setPokeName("Alolan " + localPokeAlola.getPokeName());
+									System.out.println(localPokeAlola.getPokeName());
+								}
+							} else {
 						Element typeCol = cols.get(cols.size() - 1);
 						System.out.println("Type Column: " + typeCol.toString());
 						Elements types = typeCol.select("a");
@@ -574,6 +638,7 @@ public class Pokemon {
 						typeList = typeList.substring(0, (typeList.length() - 2)); //This may behave erratically for things that have conditional types like Megas or Regional Forms.
 						System.out.println("Type: " + typeList);
 						localPoke.setPokeTypes(typeList);
+						}
 						}
 							if(subTitle.text().equals("Classification") ) {
 							System.out.println("Classification sub-table");
@@ -607,6 +672,7 @@ public class Pokemon {
 							localPoke.setEggSteps(eggSteps);
 					}
 					
+				}
 				}
 				}
 				
@@ -948,27 +1014,38 @@ public class Pokemon {
 				continue;
 				}
 			*/
-			
+			/*
 			session.beginTransaction();
 			session.merge(localPoke);
 			session.getTransaction().commit();
-			
-			Pokemon dbSample = session.get(Pokemon.class, localPoke.getPokeName());
+			*/
+			localPokeList.add(localPoke);
+			localPokeList.add(localPokeAlola);
+			localPokeList.add(localPokeGalar);
+			localPokeList.add(localPokeHisui);
+			localPokeList.add(localPokePaldea);
+			localPokeList.add(localPokeOther1);
+			localPokeList.add(localPokeOther2);
+			for(Pokemon poke : localPokeList) {
+				if(!(Objects.isNull(poke))) {
+			Pokemon dbSample = session.get(Pokemon.class, poke.getPokeName());
 			if(Objects.isNull(dbSample)) {
 				System.out.println("There is a new database entry!");
 				session.beginTransaction();
-				session.persist(localPoke);
+				session.persist(poke);
 				session.getTransaction().commit();
 				continue;
-			} else if (!(dbSample.toString().equals(localPoke.toString()))){
+			} else if (!(dbSample.toString().equals(poke.toString()))){
 				System.out.println("There is nothing to do.");
 				continue;
 				} else {
 					session.beginTransaction();
-					session.merge(localPoke);
+					session.merge(poke);
 					session.getTransaction().commit();
 					continue;
-				} 
+				}
+		}
+		}
 		}
 			
 			/*
@@ -978,8 +1055,6 @@ public class Pokemon {
 			 * 
 			 * 
 			 */
-		Pokemon testPoke = session.get(Pokemon.class, "Rotom");
-		System.out.println(testPoke.toString());
 	}
     
 	public static void natDexFinder() throws IOException {
