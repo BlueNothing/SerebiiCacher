@@ -524,6 +524,9 @@ public class Pokemon {
 			Pokemon localPokePaldea = null; //A few Pokemon have Paldean-exclusive forms.
 			Pokemon localPokeOther1 = null; //Several Pokemon have forms which are not region-specific, like the Creation Trio, the Genie Trio, Lycanroc, Indeedee, and Toxtricity.
 			Pokemon localPokeOther2 = null; //Some Pokemon, including Tauros, have multiple forms that are not neatly subsumed under the above categories; most notably, Paldean Tauros has two variant breeds.
+			Pokemon localPokeOther3 = null; //Oricorio has three substantively different forms.
+			Pokemon localPokeOther4 = null; //Rotom has 6 forms.
+			Pokemon localPokeOther5 = null; //Rotom has 6 forms.
 			ArrayList<Pokemon> localPokeList = new ArrayList<Pokemon>();
 			
 			String levelMoves = "";
@@ -581,7 +584,7 @@ public class Pokemon {
 						if(!Objects.isNull(typeData)) {
 							//System.out.println(typeData.html());
 							System.out.println(typeData.text());
-							if(typeData.text().contains("Normal")) {
+							if(typeData.text().contains("Normal") || typeData.text().contains("Style") || typeData.text().contains("Hoopa") || typeData.text().contains("Calyrex") || typeData.text().contains("Form") || typeData.text().contains("Crowned") || typeData.text().contains("Rotom")) {
 								Elements typeTable = typeData.select("tr");
 								for(Element types : typeTable) {
 									/*
@@ -607,6 +610,12 @@ public class Pokemon {
 									localPokePaldea = new Pokemon(localPoke.getPokeName());
 									localPokePaldea.setPokeName("Paldean " + localPokePaldea.getPokeName());
 									System.out.println(localPokePaldea.getPokeName());
+									if(localPoke.getPokeName().equals("Tauros")) {
+										localPokeOther1 = new Pokemon(localPokePaldea.getPokeName() + " - Blaze Breed");
+										localPokeOther2 = new Pokemon(localPokePaldea.getPokeName() + " - Aqua Breed");
+										System.out.println(localPokeOther1.getPokeName());
+										System.out.println(localPokeOther2.getPokeName());
+									}
 								}
 								if(typeData.text().contains("Hisuian")) {
 									localPokeHisui = new Pokemon(localPoke.getPokeName());
@@ -622,7 +631,40 @@ public class Pokemon {
 									localPokeAlola = new Pokemon(localPoke.getPokeName());
 									localPokeAlola.setPokeName("Alolan " + localPokeAlola.getPokeName());
 									System.out.println(localPokeAlola.getPokeName());
+								} 
+								else if(typeData.text().contains("Sensu")) { //Oricorio's forms
+									localPoke.setPokeName("Oricorio - Baile Style");
+									localPokeOther1 = new Pokemon("Oricorio - Pom-Pom Style");
+									localPokeOther2 = new Pokemon("Oricorio - Pa'u Style");
+									localPokeOther3 = new Pokemon("Oricorio - Sensu Style");
 								}
+								else if(typeData.text().contains("Hoopa")) { //Hoopa's 2 forms
+									localPoke.setPokeName("Hoopa Confined");
+									localPokeOther1 = new Pokemon("Hoopa Unbound");
+								}
+								else if(typeData.text().contains("Calyrex")){ //Calyrex and 2 forms
+									localPokeOther1 = new Pokemon(localPoke.getPokeName() + " - Ice Rider");
+									localPokeOther2 = new Pokemon(localPoke.getPokeName() + " - Shadow Rider");
+								}
+								else if(typeData.text().contains("Crowned")) { //Zacian and Zamazenta
+									localPokeOther1 = new Pokemon(localPoke.getPokeName() + " - Crowned Form");
+									localPoke.setPokeName(localPoke.getPokeName() + " - Hero of Many Battles");
+								}
+								else if(typeData.text().contains("Style")){ //Urshifu
+									localPoke.setPokeName("Urshifu - Single Strike Style");
+									localPokeOther1 = new Pokemon("Urshifu - Rapid Strike Style");
+								}
+								else if(typeData.text().contains("Rotom")) {
+									localPokeOther1 = new Pokemon("Rotom - Frost");
+									localPokeOther2 = new Pokemon("Rotom - Heat");
+									localPokeOther3 = new Pokemon("Rotom - Mow");
+									localPokeOther4 = new Pokemon("Rotom - Fan");
+									localPokeOther5 = new Pokemon("Rotom - Wash");
+								}
+								/*
+								 * The following Pokemon have alternate forms not yet accounted for by this method - 
+								 * Urshifu (1 Alternate), Meloetta (1 Alternate), and possibly others.
+								 */
 							} else {
 						Element typeCol = cols.get(cols.size() - 1);
 						System.out.println("Type Column: " + typeCol.toString());
@@ -1026,6 +1068,9 @@ public class Pokemon {
 			localPokeList.add(localPokePaldea);
 			localPokeList.add(localPokeOther1);
 			localPokeList.add(localPokeOther2);
+			localPokeList.add(localPokeOther3);
+			localPokeList.add(localPokeOther4);
+			localPokeList.add(localPokeOther5);
 			for(Pokemon poke : localPokeList) {
 				if(!(Objects.isNull(poke))) {
 			Pokemon dbSample = session.get(Pokemon.class, poke.getPokeName());
