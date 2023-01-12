@@ -1,0 +1,4 @@
+From here...
+Refactor the existing code for Spring support.
+
+Allow the user to access the database in a RESTful way, and provide support for moveset collision queries through GET requests.

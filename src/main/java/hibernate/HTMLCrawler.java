@@ -15,6 +15,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+@EnableAutoConfiguration
 
 public class HTMLCrawler {
 	/*
@@ -26,62 +32,15 @@ public class HTMLCrawler {
 
 	
 	public static void main(String[] args) throws IOException {
+		DatabasePrep.databaseInitializer();
+		//SpringApplication.run(HTMLCrawler.class, args);
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.close();
 		session = HibernateUtil.getSessionFactory().openSession();
 		String testAbility = "";
 		ArrayList<Pokemon> testCollision = new ArrayList<Pokemon>();
-		session = HibernateUtil.getSessionFactory().openSession();
-		System.out.println("Do you wish to update the database? Y/N");
-		Scanner scan = new Scanner(System.in);
-		String doUpdate = scan.nextLine();
-		if(doUpdate.equalsIgnoreCase("Y")) {
-			int selection = 10;
-			while(selection != 0) {
-			System.out.println("Please select which databases to update by typing one of the following numbers.");
-			System.out.println("To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To update all 3, type '9'. To exit, type '0'.");
-			selection = scan.nextInt();
-			switch (String.valueOf(selection)){ //This set of options should be used for populating the database.
-			case "0" :
-				System.out.println("Thank you for using the Serebii Cacher. Ending execution.");
-				break;
-				
-			case "1" :
-				session = HibernateUtil.getSessionFactory().openSession();
-				Pokemon.dexFinder(session);
-				session.close();
-				break;
-				
-			case "2" :
-				session = HibernateUtil.getSessionFactory().openSession();
-				Ability.abilityFinder(session);
-				session.close();
-				break;
-				
-			case "3" :
-				session = HibernateUtil.getSessionFactory().openSession();
-				Move.attackFinder(session);
-				session.close();
-				break;
-				
-				
-			case "9" :
-				session = HibernateUtil.getSessionFactory().openSession();
-				Pokemon.dexFinder(session);
-				Ability.abilityFinder(session);
-				Move.attackFinder(session);
-				session.close();
-				break;
-				
-			default :
-				System.out.println("Invalid input, please try again.");
-				System.out.println("Your input was: " + selection);
-				System.out.println("Handy hint: Remember to just type the number, not the quotes surrounding it.");
-				break;
-			}
-		}
-		}
 		System.out.println("Do you want to find a moveset collision? Y/N");
+		Scanner scan = new Scanner(System.in);
 		String doCollide = scan.nextLine();
 		if(doCollide.equalsIgnoreCase("Y")) {
 		System.out.println("Do you want to include an ability in your collision check? Y/N");
@@ -181,15 +140,6 @@ public static ArrayList<Pokemon> intersectionFinder(Session session, String abil
 	}
 	
 	return results;
-}
-
-public static void samplePokeData (Session session) {
-	try {
-		Pokemon.dexFinder(session);
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
 }
 }
 
