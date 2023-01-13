@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DatabasePrep {
 	
-	public static void abilityFinder(Session session) throws IOException{
+	public static void abilityFinder(Session session) throws IOException {
 		Document abiliDex = Jsoup.connect("https://www.serebii.net/abilitydex/").get();
 		Elements abilitiesDex = abiliDex.select("option");
 		List<TextNode> abilities = abilitiesDex.textNodes();
@@ -46,11 +46,6 @@ public class DatabasePrep {
 	
 	}
 		System.out.println(results.toString());
-		abilityFiller(session, results);
-	}
-	
-	public static void abilityFiller(Session session, List<Ability> results) throws IOException {
-		
 		System.out.println("Starting abilityFiller");
 		//String validatorHQL = "FROM Ability";
 		//List<Ability> results = session.createQuery(validatorHQL).list();
@@ -181,7 +176,7 @@ public class DatabasePrep {
 	}
 	
 	public static void dexFinder(Session session) throws IOException {
-		 /* What we see here selects each entry in the current Serebii Pokedex and adds it to the list.
+		/* What we see here selects each entry in the current Serebii Pokedex and adds it to the list.
 		 * Notably, the current outcome relies on a few quirks in Serebii's design for the Pokedex: 
 		 * Every Pokedex entry is repeated, but only one instance of each dex entry is numbered, and outside of the Paldea dex, it's numbered with its National Dex entry.
 		 * Inside the Paldea dex, they're numbered with their local dex number.
@@ -224,11 +219,6 @@ public class DatabasePrep {
 		//String pokeName = dbSample.getPokeName();
 		//results.add(pokeName);
 	}
-	//results.forEach(outcome -> System.out.println(outcome)); This prints the dex data, but isn't needed right now.
-	dexFiller(session, results);
-	}
-	
-	public static void dexFiller(Session session, List<String> results) throws IOException {
 		//String validatorHQL = "FROM Pokemon";
 		//List<Pokemon> results = session.createQuery(validatorHQL).list();
 		for (String inputName : results) {
@@ -777,7 +767,7 @@ public class DatabasePrep {
 			session.getTransaction().commit();
 			*/
 			localPokeList.add(localPoke);
-			localPokeList.add(localPokeAlola);
+			/*localPokeList.add(localPokeAlola);
 			localPokeList.add(localPokeGalar);
 			localPokeList.add(localPokeHisui);
 			localPokeList.add(localPokePaldea);
@@ -786,6 +776,7 @@ public class DatabasePrep {
 			localPokeList.add(localPokeOther3);
 			localPokeList.add(localPokeOther4);
 			localPokeList.add(localPokeOther5);
+			*/
 			for(Pokemon poke : localPokeList) {
 				if(!(Objects.isNull(poke))) {
 			Pokemon dbSample = session.get(Pokemon.class, poke.getPokeName());
@@ -818,6 +809,10 @@ public class DatabasePrep {
 	}
 	
 	public static void attackFinder(Session session) throws IOException{
+		/*
+		String validatorHQL = "FROM Move";
+		List<Move> results = session.createQuery(validatorHQL).list();
+		*/
 		List<Move> results = new ArrayList<Move>();
 		Document gen9AtkDex = Jsoup.connect("https://www.serebii.net/attackdex-sv/").get();
 		Elements AtkDex = gen9AtkDex.select("option");
@@ -832,20 +827,11 @@ public class DatabasePrep {
 		}
 		}
 	for(String s : AtkDexOverall) {
-		Move moveSample = session.get(Move.class, s);
 		Move move = new Move();
 		move.setMoveName(s);
 		results.add(move);
 		}
-	attackFiller(session, results);
-	}
-	
-	public static void attackFiller(Session session, List<Move> attackDex) throws IOException{
-		/*
-		String validatorHQL = "FROM Move";
-		List<Move> results = session.createQuery(validatorHQL).list();
-		*/
-		for (Move move : attackDex) {
+		for (Move move : results) {
 			String battleEffect = "";
 			boolean isBite = false, isBlockable = false, isBullet = false, isContact = false, isCopyable = false, isDeprecated = false;
 			boolean isGravityAffected = false, isMetronomable = false, isPowder = false, isPunch = false, isReflectable = false, isSlice = false;
@@ -1303,45 +1289,29 @@ public class DatabasePrep {
 	}
 }
 	
-	public static void databaseInitializer() throws IOException {
+	public static void databaseInitializer(String id) throws IOException {
 		Session session = HibernateUtil.getSessionFactory().openSession();
-		Scanner scan = new Scanner(System.in);
-		int selection = 0;
-		String doUpdate = scan.nextLine();
-			do {
-			if(doUpdate.equalsIgnoreCase("Y")) {
-			System.out.println("Please select which databases to update by typing one of the following numbers.");
-			System.out.println("To update the Pokedex, type '1'. To update the AbilityDex, type '2'. To update the AttackDex, type '3'. To update all 3, type '9'. To exit, type '0'.");
-			try {
-			selection = scan.nextInt();
-			} catch(Exception e) {
-				selection = 10;
-			}
-			switch (selection){ //This set of options should be used for populating the database.
-			case 0 :
-				System.out.println("Thank you for using the Serebii Cacher. Ending execution.");
-				break;
-				
-			case 1 :
+			switch (id){ //This set of options should be used for populating the database.	
+			case "pokemon" :
 				session = HibernateUtil.getSessionFactory().openSession();
 				dexFinder(session);
 				session.close();
 				break;
 				
-			case 2 :
+			case "abilities" :
 				session = HibernateUtil.getSessionFactory().openSession();
 				abilityFinder(session);
 				session.close();
 				break;
 				
-			case 3 :
+			case "moves" :
 				session = HibernateUtil.getSessionFactory().openSession();
 				attackFinder(session);
 				session.close();
 				break;
 				
 				
-			case 9 :
+			case "all" :
 				session = HibernateUtil.getSessionFactory().openSession();
 				dexFinder(session);
 				abilityFinder(session);
@@ -1350,21 +1320,16 @@ public class DatabasePrep {
 				break;
 				
 			default :
-				System.out.println("Invalid input, please try again.");
-				System.out.println("Your input was: " + selection);
-				System.out.println("Handy hint: Remember to just type the number, not the quotes surrounding it.");
+				System.out.println("Fully populating the database. This may take a while, please be patient.");
+				session = HibernateUtil.getSessionFactory().openSession();
+				dexFinder(session);
+				abilityFinder(session);
+				attackFinder(session);
+				session.close();
+				System.out.println("Databases populated!");
 				break;
 			}
-			System.out.println("Do you still wish to update the database? Y/N");
-			doUpdate = scan.nextLine();
-			if(doUpdate.equalsIgnoreCase("N")) {
-				selection = 0;
-			}
-		} 
-		
-
-	} while(selection != 0);
-			scan.close();
-	}
+	
+}
 	
 }

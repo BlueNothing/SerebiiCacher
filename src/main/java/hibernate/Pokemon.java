@@ -18,7 +18,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Pokemon")
+@Table(name = "pokemon")
 public class Pokemon {
 	
     @Id
@@ -38,16 +38,16 @@ public class Pokemon {
     private String weight;
     
     @Column(name = "capRate")
-    private double capRate;
+    private Double capRate;
     
      @Column(name="eggSteps")
-     private int eggSteps;
+     private Integer eggSteps;
     
     @Column(name="abilities")
     private String abilities;
     
      @Column(name="evRewardAmt")
-     private int evRewardAmt;
+     private Integer evRewardAmt;
      
      @Column(name="evRewardAttr")
      private String evRewardAttr;
@@ -93,25 +93,25 @@ public class Pokemon {
     private String totalMoves;
     
     @Column(name="baseHP")
-    private int baseHP;
+    private Integer baseHP;
     
     @Column(name="baseAtk")
-    private int baseAtk;
+    private Integer baseAtk;
     
     @Column(name="baseDef")
-    private int baseDef;
+    private Integer baseDef;
     
     @Column(name="baseSpAtk")
-    private int baseSpAtk;
+    private Integer baseSpAtk;
     
     @Column(name="baseSpDef")
-    private int baseSpDef;
+    private Integer baseSpDef;
     
     @Column(name="baseSpd")
-    private int baseSpd;
+    private Integer baseSpd;
     
     @Column(name="bst")
-    private int bst;
+    private Integer bst;
     
     
     
@@ -155,7 +155,7 @@ public class Pokemon {
 		this.classification = null;
 		this.height = null;
 		this.weight = null;
-		this.capRate = 0;
+		this.capRate = 0.0;
 		this.eggSteps = 0;
 		this.abilities = null;
 		this.evRewardAmt = 0;
@@ -180,7 +180,7 @@ public class Pokemon {
 		this.classification = null;
 		this.height = null;
 		this.weight = null;
-		this.capRate = 0;
+		this.capRate = 0.0;
 		this.eggSteps = 0;
 		this.abilities = null;
 		this.evRewardAmt = 0;
@@ -200,10 +200,10 @@ public class Pokemon {
     }
 
 	
-    public Pokemon(String pokeName, String pokeTypes, String classification, String height, String weight, double capRate,
-			int eggSteps, String abilities, int evRewardAmt, String evRewardAttr, String levelMoves, String tmMoves,
-			String otherMoves, String eggMoves, String totalMoves, int baseHP, int baseAtk, int baseDef,
-			int baseSpAtk, int baseSpDef, int baseSpd, int bst) {
+    public Pokemon(String pokeName, String pokeTypes, String classification, String height, String weight, Double capRate,
+			Integer eggSteps, String abilities, Integer evRewardAmt, String evRewardAttr, String levelMoves, String tmMoves,
+			String otherMoves, String eggMoves, String totalMoves, Integer baseHP, Integer baseAtk, Integer baseDef,
+			Integer baseSpAtk, Integer baseSpDef, Integer baseSpd, Integer bst) {
 		super();
 		this.pokeName = pokeName;
 		this.pokeTypes = pokeTypes;
@@ -269,10 +269,6 @@ public class Pokemon {
 		this.tmMoves = tmMoves;
 	}
 
-	public String getotherMoves() {
-		return otherMoves;
-	}
-
 	public String getEggMoves() {
 		return eggMoves;
 	}
@@ -289,59 +285,59 @@ public class Pokemon {
 		this.totalMoves = totalMoves;
 	}
 
-	public int getBaseHP() {
+	public Integer getBaseHP() {
 		return baseHP;
 	}
 
-	public void setBaseHP(int baseHP) {
+	public void setBaseHP(Integer baseHP) {
 		this.baseHP = baseHP;
 	}
 
-	public int getBaseAtk() {
+	public Integer getBaseAtk() {
 		return baseAtk;
 	}
 
-	public void setBaseAtk(int baseAtk) {
+	public void setBaseAtk(Integer baseAtk) {
 		this.baseAtk = baseAtk;
 	}
 
-	public int getBaseDef() {
+	public Integer getBaseDef() {
 		return baseDef;
 	}
 
-	public void setBaseDef(int baseDef) {
+	public void setBaseDef(Integer baseDef) {
 		this.baseDef = baseDef;
 	}
 
-	public int getBaseSpAtk() {
+	public Integer getBaseSpAtk() {
 		return baseSpAtk;
 	}
 
-	public void setBaseSpAtk(int baseSpAtk) {
+	public void setBaseSpAtk(Integer baseSpAtk) {
 		this.baseSpAtk = baseSpAtk;
 	}
 
-	public int getBaseSpDef() {
+	public Integer getBaseSpDef() {
 		return baseSpDef;
 	}
 
-	public void setBaseSpDef(int baseSpDef) {
+	public void setBaseSpDef(Integer baseSpDef) {
 		this.baseSpDef = baseSpDef;
 	}
 
-	public int getBaseSpd() {
+	public Integer getBaseSpd() {
 		return baseSpd;
 	}
 
-	public void setBaseSpd(int baseSpd) {
+	public void setBaseSpd(Integer baseSpd) {
 		this.baseSpd = baseSpd;
 	}
 
-	public int getBst() {
+	public Integer getBst() {
 		return bst;
 	}
 
-	public void setBst(int bst) {
+	public void setBst(Integer bst) {
 		this.bst = bst;
 	}
 
@@ -369,27 +365,27 @@ public class Pokemon {
 		this.weight = weight;
 	}
 
-	public double getCapRate() {
+	public Double getCapRate() {
 		return capRate;
 	}
 
-	public void setCapRate(double capRate) {
+	public void setCapRate(Double capRate) {
 		this.capRate = capRate;
 	}
 
-	public int getEggSteps() {
+	public Integer getEggSteps() {
 		return eggSteps;
 	}
 
-	public void setEggSteps(int eggSteps) {
+	public void setEggSteps(Integer eggSteps) {
 		this.eggSteps = eggSteps;
 	}
 
-	public int getEvRewardAmt() {
+	public Integer getEvRewardAmt() {
 		return evRewardAmt;
 	}
 
-	public void setEvRewardAmt(int evRewardAmt) {
+	public void setEvRewardAmt(Integer evRewardAmt) {
 		this.evRewardAmt = evRewardAmt;
 	}
 
@@ -466,11 +462,11 @@ public class Pokemon {
 		Element natDexTable = natDex.select("table.dextable").get(0);
 		Elements rows = natDexTable.select("tr");
 		ArrayList<String> natDexOverall = new ArrayList<String>();
-		for(int i = 2; i < 5/*rows.size()*/; i++) {
+		for(Integer i = 2; i < 5/*rows.size()*/; i++) {
 			Element row = rows.get(i);
 			Elements cols = row.select("td");
 			System.out.println(cols.text().toString());
-			for(int j = 0; j < cols.size(); j++) {
+			for(Integer j = 0; j < cols.size(); j++) {
 				Element col= cols.get(j);
 				if(!(col.text().toString() == null)) {
 				System.out.println(j + col.text().toString());

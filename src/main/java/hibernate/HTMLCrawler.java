@@ -19,7 +19,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"hibernate.Controller"})
 @EnableAutoConfiguration
 
 public class HTMLCrawler {
@@ -32,8 +32,10 @@ public class HTMLCrawler {
 
 	
 	public static void main(String[] args) throws IOException {
-		DatabasePrep.databaseInitializer();
-		//SpringApplication.run(HTMLCrawler.class, args);
+		SpringApplication.run(HTMLCrawler.class, args);
+	}
+	
+	public static void collisionChecker() throws IOException {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.close();
 		session = HibernateUtil.getSessionFactory().openSession();
@@ -84,6 +86,34 @@ public class HTMLCrawler {
 			System.out.println("Overall Collision Set - The following Pokemon have the specifed move combination: " + testMoves.toString() + " : "+ outputList.toString());
 		}
 	}
+	}
+	
+	public static void collisionChecker(String ability, ArrayList<String> testMoves) throws IOException {
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		session.close();
+		session = HibernateUtil.getSessionFactory().openSession();
+		String testAbility = ability;
+		ArrayList<Pokemon> testCollision = new ArrayList<Pokemon>();
+		testCollision = intersectionFinder(session, testAbility, testMoves);
+		ArrayList<String> outputList = new ArrayList<String>();
+		for(Pokemon p : testCollision) {
+			outputList.add(p.getPokeName());
+		}
+		System.out.println("Overall Collision Set - The following Pokemon have the specified ability " + testAbility + " and the specifed moves" + testMoves.toString() + " : "+ outputList.toString());
+	}
+	
+	public static void collisionChecker(ArrayList<String> testMoves) throws IOException {
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		session.close();
+		session = HibernateUtil.getSessionFactory().openSession();
+		ArrayList<Pokemon> testCollision = new ArrayList<Pokemon>();
+		testCollision = intersectionFinder(session, testMoves);
+		ArrayList<String> outputList = new ArrayList<String>();
+		for(Pokemon p : testCollision) {
+			outputList.add(p.getPokeName());
+		}
+		System.out.println("Overall Collision Set - The following Pokemon have the specifed move combination: " + testMoves.toString() + " : "+ outputList.toString());
+		
 	}
 
 
