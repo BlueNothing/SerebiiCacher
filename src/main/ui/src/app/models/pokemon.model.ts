@@ -1,0 +1,24 @@
+export class PokemonModel {
+    pokeName: string = "";
+	pokeTypes: string = "";
+	classification: string = "";
+	height: string = "";
+	weight: string = "";
+	capRate: number = 0.0;
+	eggSteps: number = 0;
+	abilities: string = "";
+	evRewardAmt: number = 0;
+	evRewardAttr: string = "";
+	levelMoves: string = "";
+	tmMoves: string = "";
+	otherMoves: string = "";
+	eggMoves: string = "";
+	totalMoves: string = "";
+	baseHP: number = 0;
+	baseAtk: number = 0;
+	baseDef: number = 0;
+	baseSpAtk: number = 0;
+	baseSpDef: number = 0;
+	baseSpd: number = 0;
+	bst: number = 0;
+}

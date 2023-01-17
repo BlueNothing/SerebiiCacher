@@ -5,6 +5,7 @@ import java.util.List;
 import hibernate.DatabasePrep;
 import hibernate.HTMLCrawler;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import hibernate.DatabasePrep;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 public class HomepageController {
 	
 	@GetMapping(value="error")

@@ -1,0 +1,31 @@
+export class MoveModel {
+    battleEffect: string = "";
+		isBite: boolean = false; 
+        isBlockable: boolean = false;
+        isBullet: boolean = false;
+        isContact: boolean = false;
+        isCopyable: boolean = false;
+        isDeprecated: boolean = false;
+        isGravityAffected: boolean = false;
+        isMetronomable: boolean = false;
+        isPowder: boolean = false; 
+        isPunch: boolean = false;
+        isReflectable: boolean = false;
+        isSlice: boolean = false;
+		isSnatchable: boolean = false;
+        isDefrosting: boolean = false;
+        isSound: boolean = false;
+        isWind: boolean = false;
+		learnset: string = "";
+		moveAcc: number = 0;
+		moveBaseCrit: number = 0.0;
+		moveBasePower: number = 0;
+		moveCategory: string = "";
+		movePP: number = 0;
+		movePriority: number = 0;
+		effectRate: number = 0.0;
+		moveTargets: string = "";
+		moveType: string = "";
+		secondaryEffect: string = "";
+		inDepthEffect: string = "";
+}
