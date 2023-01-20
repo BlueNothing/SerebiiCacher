@@ -1,4 +1,4 @@
-package hibernate;
+package hibernate.move;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,13 +23,13 @@ import jakarta.persistence.Table;
 public class Move {
 	@Id
 	@Column(name="name", length = 10000)
-	private String moveName;
+	private String name;
 	
 	@Column(name="movetype") 
 	String moveType;
 	
-	@Column(name="movecategory") 
-	String moveCategory;
+	@Column(name="movecategory")
+	public String moveCategory;
 	
 	@Column(name="movepp")
 	private Integer movePP;
@@ -112,12 +112,12 @@ public class Move {
 	@Column(name="learnset", length = 10000)
 	private String learnset;
 
-	public String getMoveName() {
-		return moveName;
+	public String getName() {
+		return name;
 	}
 
-	public void setMoveName(String moveName) {
-		this.moveName = moveName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getMoveType() {
@@ -359,7 +359,7 @@ public class Move {
 		return Objects.hash(battleEffect, effectRate, inDepthEffect, isBite, isBlockable, isBullet, isContact,
 				isCopyable, isDefrosting, isDeprecated, isGravityAffected, isMetronomable, isPowder, isPunch,
 				isReflectable, isSlice, isSnatchable, isSound, isWind, learnset, moveAcc, moveBaseCrit, moveBasePower,
-				moveCategory, moveName, movePP, movePriority, moveTargets, moveType, secondaryEffect);
+				moveCategory, name, movePP, movePriority, moveTargets, moveType, secondaryEffect);
 	}
 
 	@Override
@@ -382,7 +382,7 @@ public class Move {
 				&& isSnatchable == other.isSnatchable && isSound == other.isSound && isWind == other.isWind
 				&& Objects.equals(learnset, other.learnset) && moveAcc == other.moveAcc
 				&& moveBaseCrit == other.moveBaseCrit && moveBasePower == other.moveBasePower
-				&& Objects.equals(moveCategory, other.moveCategory) && Objects.equals(moveName, other.moveName)
+				&& Objects.equals(moveCategory, other.moveCategory) && Objects.equals(name, other.name)
 				&& movePP == other.movePP && movePriority == other.movePriority
 				&& Objects.equals(moveTargets, other.moveTargets) && Objects.equals(moveType, other.moveType)
 				&& Objects.equals(secondaryEffect, other.secondaryEffect);
@@ -390,7 +390,7 @@ public class Move {
 
 	@Override
 	public String toString() {
-		return "Move [moveName=" + moveName + ", moveType=" + moveType + ", moveCategory=" + moveCategory + ", movePP="
+		return "Move [name=" + name + ", moveType=" + moveType + ", moveCategory=" + moveCategory + ", movePP="
 				+ movePP + ", moveBasePower=" + moveBasePower + ", moveAcc=" + moveAcc + ", battleEffect="
 				+ battleEffect + ", inDepthEffect=" + inDepthEffect + ", secondaryEffect=" + secondaryEffect
 				+ ", effectRate=" + effectRate + ", moveBaseCrit=" + moveBaseCrit + ", movePriority=" + movePriority
@@ -404,11 +404,28 @@ public class Move {
 
 	public Move() {
 		super();
+		String name = "";
+		String battleEffect = "";
+		boolean isBite = false, isBlockable = false, isBullet = false, isContact = false, isCopyable = false, isDeprecated = false;
+		boolean isGravityAffected = false, isMetronomable = false, isPowder = false, isPunch = false, isReflectable = false, isSlice = false;
+		boolean isSnatchable = false, isDefrosting = false, isSound = false, isWind = false;
+		String learnset = "";
+		int moveAcc = 0;
+		double moveBaseCrit = 0;
+		int moveBasePower = 0;
+		String moveCategory = "";
+		int movePP = 0;
+		int movePriority = 0;
+		double effectRate = 0;
+		String moveTargets = "";
+		String moveType = "";
+		String secondaryEffect = "";
+		String inDepthEffect = "";
 	}
 
-	public Move(String moveName) {
+	public Move(String name) {
 		super();
-		this.moveName = moveName;
+		this.name = name;
 		String battleEffect = "";
 		Boolean isBite = false, isBlockable = false, isBullet = false, isContact = false, isCopyable = false, isDeprecated = false;
 		Boolean isGravityAffected = false, isMetronomable = false, isPowder = false, isPunch = false, isReflectable = false, isSlice = false;

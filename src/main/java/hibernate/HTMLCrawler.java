@@ -19,7 +19,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {"hibernate.Controller"})
+import hibernate.pokemon.Pokemon;
+
+@SpringBootApplication(scanBasePackages = {"hibernate", "hibernate.ability", "hibernate.move", "hibernate.pokemon"})
 @EnableAutoConfiguration
 
 public class HTMLCrawler {
@@ -77,7 +79,7 @@ public class HTMLCrawler {
 		
 		ArrayList<String> outputList = new ArrayList<String>();
 		for(Pokemon p : testCollision) {
-			outputList.add(p.getPokeName());
+			outputList.add(p.getName());
 		}
 		
 		if(withAbility.equalsIgnoreCase("Y") && !(testAbility.isBlank())) {
@@ -97,7 +99,7 @@ public class HTMLCrawler {
 		testCollision = intersectionFinder(session, testAbility, testMoves);
 		ArrayList<String> outputList = new ArrayList<String>();
 		for(Pokemon p : testCollision) {
-			outputList.add(p.getPokeName());
+			outputList.add(p.getName());
 		}
 		System.out.println("Overall Collision Set - The following Pokemon have the specified ability " + testAbility + " and the specifed moves" + testMoves.toString() + " : "+ outputList.toString());
 	}
@@ -110,7 +112,7 @@ public class HTMLCrawler {
 		testCollision = intersectionFinder(session, testMoves);
 		ArrayList<String> outputList = new ArrayList<String>();
 		for(Pokemon p : testCollision) {
-			outputList.add(p.getPokeName());
+			outputList.add(p.getName());
 		}
 		System.out.println("Overall Collision Set - The following Pokemon have the specifed move combination: " + testMoves.toString() + " : "+ outputList.toString());
 		

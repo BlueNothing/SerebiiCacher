@@ -1,11 +1,11 @@
-package hibernate.Repository;
+package hibernate.pokemon;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import hibernate.HibernateUtil;
-import hibernate.Pokemon;
+
 import org.hibernate.Session;
 
 public interface PokemonRepository extends JpaRepository<Pokemon, String>{

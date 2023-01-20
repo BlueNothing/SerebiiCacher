@@ -1,13 +1,12 @@
-package hibernate.Repository;
+package hibernate.ability;
 
 import java.util.List;
 
 import org.hibernate.Session;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import hibernate.Ability;
 import hibernate.HibernateUtil;
-import hibernate.Pokemon;
+import hibernate.pokemon.Pokemon;
 
 public interface AbilityRepository extends JpaRepository<Ability, String>{
 	

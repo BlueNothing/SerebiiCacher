@@ -15,8 +15,8 @@
 		<property name="hibernate.format_sql">true</property>
 		<property name="hibernate.hbm2ddl.auto">update</property>
 		<property name="hibernate.current_session_context_class">thread</property>
-		<mapping class="hibernate.Ability" />
-		<mapping class="hibernate.Move" />
-		<mapping class="hibernate.Pokemon" />
+		<mapping class="hibernate.ability.Ability" />
+		<mapping class="hibernate.move.Move" />
+		<mapping class="hibernate.pokemon.Pokemon" />
 	</session-factory>
 </hibernate-configuration>

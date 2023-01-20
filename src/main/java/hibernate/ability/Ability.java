@@ -1,4 +1,4 @@
-package hibernate;
+package hibernate.ability;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import jakarta.persistence.Table;
 public class Ability {
 	@Id
     @Column(name = "name")
-    private String abilityName;
+    private String name;
 
     @Column(name = "gameText", length = 1020)
     private String abilityGameText;
@@ -40,12 +40,12 @@ public class Ability {
     @Column(name="accessSet", length = 1020)
     private String accessSet;
     
-    public String getAbilityName() {
-		return abilityName;
+    public String getName() {
+		return name;
 	}
 
-	public void setAbilityName(String abilityName) {
-		this.abilityName = abilityName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getAbilityGameText() {
@@ -91,14 +91,14 @@ public class Ability {
 
 	@Override
 	public String toString() {
-		return "Ability [abilityName=" + abilityName + ", abilityGameText=" + abilityGameText
+		return "Ability [name=" + name + ", abilityGameText=" + abilityGameText
 				+ ", inDepthAbilityEffect=" + inDepthAbilityEffect + ", overworldEffect=" + overworldEffect
 				+ ", affectedMoves=" + affectedMoves + ", accessSet=" + accessSet + "]";
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(abilityGameText, abilityName, accessSet, affectedMoves, inDepthAbilityEffect,
+		return Objects.hash(abilityGameText, name, accessSet, affectedMoves, inDepthAbilityEffect,
 				overworldEffect);
 	}
 
@@ -111,30 +111,30 @@ public class Ability {
 		if (getClass() != obj.getClass())
 			return false;
 		Ability other = (Ability) obj;
-		return Objects.equals(abilityGameText, other.abilityGameText) && Objects.equals(abilityName, other.abilityName)
+		return Objects.equals(abilityGameText, other.abilityGameText) && Objects.equals(name, other.name)
 				&& Objects.equals(accessSet, other.accessSet) && Objects.equals(affectedMoves, other.affectedMoves)
 				&& Objects.equals(inDepthAbilityEffect, other.inDepthAbilityEffect)
 				&& Objects.equals(overworldEffect, other.overworldEffect);
 	}
 
 	public Ability() {
-		this.abilityName = null;
+		this.name = null;
     	this.abilityGameText = null;
     	this.inDepthAbilityEffect = null;
     	this.overworldEffect = null;
     }
     
-    public Ability(String abilityName) {
-    	this.abilityName = abilityName;
+    public Ability(String name) {
+    	this.name = name;
     	this.abilityGameText = null;
     	this.inDepthAbilityEffect = null;
     	this.overworldEffect = null;
     }
 
-	public Ability(String abilityName, String abilityGameText, String inDepthAbilityEffect, String overworldEffect,
+	public Ability(String name, String abilityGameText, String inDepthAbilityEffect, String overworldEffect,
 			String affectedMoves, String accessSet) {
 		super();
-		this.abilityName = abilityName;
+		this.name = name;
 		this.abilityGameText = abilityGameText;
 		this.inDepthAbilityEffect = inDepthAbilityEffect;
 		this.overworldEffect = overworldEffect;

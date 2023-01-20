@@ -15,44 +15,23 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.springframework.context.annotation.Configuration;
 
+import hibernate.ability.Ability;
+import hibernate.ability.AbilityHelpers;
+import hibernate.move.Move;
+import hibernate.move.MoveHelpers;
+import hibernate.pokemon.Pokemon;
+
 @Configuration
 public class DatabasePrep {
 	
 	public static void abilityFinder(Session session) throws IOException {
-		Document abiliDex = Jsoup.connect("https://www.serebii.net/abilitydex/").get();
-		Elements abilitiesDex = abiliDex.select("option");
-		List<TextNode> abilities = abilitiesDex.textNodes();
-		List<Ability> results = new ArrayList<Ability>();
-		System.out.println(abilitiesDex.eachText());
-		ArrayList<String> abilitiesDexOverall = new ArrayList<String>();
-		System.out.println("Inital ability dex data:");
-		
-		for(TextNode x : abilities) {
-				if(!(x.text().startsWith("AbilityDex"))) {
-					abilitiesDexOverall.add(x.text());
-					System.out.println(x.text());
-					Ability dbSample = session.get(Ability.class, x.text());
-					Ability localAbility = new Ability();
-					localAbility.setAbilityName(x.text());
-					results.add(localAbility);
-					if (!(Objects.isNull(dbSample)) && dbSample.getAbilityName().equals(localAbility.getAbilityName())) {
-						System.out.println("Nothing to do here.");
-						continue;
-					} else {
-		}
-		} else {
-			continue;
-		}
-	
-	}
-		System.out.println(results.toString());
-		System.out.println("Starting abilityFiller");
+		ArrayList<Ability> results = AbilityHelpers.abilityListGenerator(session);
 		//String validatorHQL = "FROM Ability";
 		//List<Ability> results = session.createQuery(validatorHQL).list();
 		for (Ability ability : results) {
 			Ability localAbility = new Ability();
-			localAbility.setAbilityName(ability.getAbilityName());
-			String abilityName = localAbility.getAbilityName().toLowerCase().replace("%20", "").replace(" ", "");
+			localAbility.setName(ability.getName());
+			String abilityName = localAbility.getName().toLowerCase().replace("%20", "").replace(" ", "");
 			String URL = "https://www.serebii.net/abilitydex/" + abilityName + ".shtml";
 			Document abilityDoc = Jsoup.connect((URL)).get();
 			String inGameText = null, inDepthEffect = null, overworldEffect = null, affectedMoves = null, accessSet = null;
@@ -154,23 +133,7 @@ public class DatabasePrep {
 			localAbility.setAccessSet(accessSet);
 			System.out.println("Access Set: " + accessSet);
 		//The code now effectively connects to the webpage for most abilities.
-			Ability dbSample = session.get(Ability.class, localAbility.getAbilityName());
-			System.out.println(localAbility.toString());
-		if(!(Objects.isNull(dbSample)) && dbSample.toString().equals(localAbility.toString())) {
-			System.out.println(localAbility.getAbilityName() + ": already in database. There is nothing to do here.");
-			continue;
-		} else if (Objects.isNull(dbSample)){
-			session.beginTransaction();
-			session.persist(localAbility);
-			session.getTransaction().commit();
-			continue;
-		}
-		else if(!(Objects.isNull(dbSample)) && !(dbSample.toString().equals(localAbility.toString()))) {
-			session.beginTransaction();
-			session.merge(localAbility);
-			session.getTransaction().commit();
-			continue;
-		} 
+			GeneralHelpers.dbPersist(localAbility, session);
 		
 		}
 	}
@@ -187,7 +150,7 @@ public class DatabasePrep {
 		 * Alternate forms may have a different type, a different classification, different weaknesses, different abilities, a different moveset, different stats, and/or different EVs.
 		 * 
 		*/
-		
+		ArrayList<Pokemon> variantPokeList = new ArrayList<Pokemon>();
 		Document palDex = Jsoup.connect("https://www.serebii.net/pokedex-sv/").get();
 		Elements palDexElems = palDex.select("option");
 		List<String> palDexData = palDexElems.eachText();
@@ -210,8 +173,10 @@ public class DatabasePrep {
 			}
 	}
 	}
+	
 	System.out.println("Dex stubs uploaded to DB.");
 	System.out.println("Testing DB contents!");
+	
 	for(String s : palDexOverall) {
 		results.add(s); //The latter option may be more thorough, but keeping this one for now, because it should be *much* faster.
 		
@@ -250,7 +215,7 @@ public class DatabasePrep {
 			int baseSpAtk = 0;
 			int baseSpDef = 0;
 			int bst = 0;
-			String pokeName = localPoke.getPokeName(); //Working on this part to dynamically fill the dex!
+			String pokeName = localPoke.getName(); //Working on this part to dynamically fill the dex!
 			String urlPokeName = pokeName.toLowerCase().replace("%20", "").replace(" ", "").replace("%C3%A9", "e").replace("é", "e");
 			//urlPokeName = "charmander";
 			//System.out.println(urlPokeName);
@@ -295,11 +260,10 @@ public class DatabasePrep {
 							System.out.println(typeData.text());
 							if(typeData.text().contains("Normal") || typeData.text().contains("Style") || typeData.text().contains("Hoopa") || typeData.text().contains("Calyrex") || typeData.text().contains("Form") || typeData.text().contains("Crowned") || typeData.text().contains("Rotom")) {
 								Elements typeTable = typeData.select("tr");
-								for(Element types : typeTable) {
-									/*
-									 * Element typeCol = cols.get(cols.size() - 1);
-						System.out.println("Type Column: " + typeCol.toString());
-						Elements types = typeCol.select("a");
+								for(Element typeSet : typeTable) {
+									Element typeCol = cols.get(cols.size() - 1);
+									System.out.println("Type Column: " + typeCol.toString());
+									Elements types = typeCol.select("a");
 						String typeList = "";
 						for(Element type : types) {
 							String typeHref = type.attr("href");
@@ -311,57 +275,61 @@ public class DatabasePrep {
 						typeList = typeList.substring(0, (typeList.length() - 2)); //This may behave erratically for things that have conditional types like Megas or Regional Forms.
 						System.out.println("Type: " + typeList);
 						localPoke.setPokeTypes(typeList);
-									 */
 									System.out.println(types.text());
 								}
 								
 								if(typeData.text().contains("Paldean")) {
-									localPokePaldea = new Pokemon(localPoke.getPokeName());
-									localPokePaldea.setPokeName("Paldean " + localPokePaldea.getPokeName());
-									System.out.println(localPokePaldea.getPokeName());
-									if(localPoke.getPokeName().equals("Tauros")) {
-										localPokeOther1 = new Pokemon(localPokePaldea.getPokeName() + " - Blaze Breed");
-										localPokeOther2 = new Pokemon(localPokePaldea.getPokeName() + " - Aqua Breed");
-										System.out.println(localPokeOther1.getPokeName());
-										System.out.println(localPokeOther2.getPokeName());
+									localPokePaldea = new Pokemon(localPoke.getName());
+									localPokePaldea.setName("Paldean " + localPokePaldea.getName());
+									System.out.println(localPokePaldea.getName());
+									if(localPoke.getName().equals("Tauros")) {
+										localPokeOther1 = new Pokemon(localPokePaldea.getName() + " - Blaze Breed");
+										localPokeOther2 = new Pokemon(localPokePaldea.getName() + " - Aqua Breed");
+										System.out.println(localPokeOther1.getName());
+										System.out.println(localPokeOther2.getName());
 									}
 								}
 								if(typeData.text().contains("Hisuian")) {
-									localPokeHisui = new Pokemon(localPoke.getPokeName());
-									localPokeHisui.setPokeName("Hisuian " + localPokeHisui.getPokeName());
-									System.out.println(localPokeHisui.getPokeName());
+									localPokeHisui = new Pokemon(localPoke.getName());
+									localPokeHisui.setName("Hisuian " + localPokeHisui.getName());
+									System.out.println(localPokeHisui.getName());
 								}
 								if(typeData.text().contains("Galarian")) {
-									localPokeGalar = new Pokemon(localPoke.getPokeName());
-									localPokeGalar.setPokeName("Galarian " + localPokeGalar.getPokeName());
-									System.out.println(localPokeGalar.getPokeName());
+									localPokeGalar = new Pokemon(localPoke.getName());
+									localPokeGalar.setName("Galarian " + localPokeGalar.getName());
+									System.out.println(localPokeGalar.getName());
 								}
 								if(typeData.text().contains("Alolan")) {
-									localPokeAlola = new Pokemon(localPoke.getPokeName());
-									localPokeAlola.setPokeName("Alolan " + localPokeAlola.getPokeName());
-									System.out.println(localPokeAlola.getPokeName());
+									localPokeAlola = new Pokemon(localPoke.getName());
+									localPokeAlola.setName("Alolan " + localPokeAlola.getName());
+									System.out.println(localPokeAlola.getName());
 								} 
 								else if(typeData.text().contains("Sensu")) { //Oricorio's forms
-									localPoke.setPokeName("Oricorio - Baile Style");
+									localPoke.setName("Oricorio - Baile Style");
 									localPokeOther1 = new Pokemon("Oricorio - Pom-Pom Style");
 									localPokeOther2 = new Pokemon("Oricorio - Pa'u Style");
 									localPokeOther3 = new Pokemon("Oricorio - Sensu Style");
 								}
 								else if(typeData.text().contains("Hoopa")) { //Hoopa's 2 forms
-									localPoke.setPokeName("Hoopa Confined");
+									localPoke.setName("Hoopa Confined");
 									localPokeOther1 = new Pokemon("Hoopa Unbound");
 								}
 								else if(typeData.text().contains("Calyrex")){ //Calyrex and 2 forms
-									localPokeOther1 = new Pokemon(localPoke.getPokeName() + " - Ice Rider");
-									localPokeOther2 = new Pokemon(localPoke.getPokeName() + " - Shadow Rider");
+									localPokeOther1 = new Pokemon(localPoke.getName() + " - Ice Rider");
+									localPokeOther2 = new Pokemon(localPoke.getName() + " - Shadow Rider");
 								}
 								else if(typeData.text().contains("Crowned")) { //Zacian and Zamazenta
-									localPokeOther1 = new Pokemon(localPoke.getPokeName() + " - Crowned Form");
-									localPoke.setPokeName(localPoke.getPokeName() + " - Hero of Many Battles");
+									localPokeOther1 = new Pokemon(localPoke.getName() + " - Crowned Form");
+									localPoke.setName(localPoke.getName() + " - Hero of Many Battles");
 								}
 								else if(typeData.text().contains("Style")){ //Urshifu
-									localPoke.setPokeName("Urshifu - Single Strike Style");
+									localPoke.setName("Urshifu - Single Strike Style");
 									localPokeOther1 = new Pokemon("Urshifu - Rapid Strike Style");
+								}
+								else if(typeData.text().contains("Aria Forme")) {
+									localPoke.setName("Meloetta - Aria Forme");
+									localPokeOther1 = new Pokemon("Meloetta - Pirouette Forme");
+									
 								}
 								else if(typeData.text().contains("Rotom")) {
 									localPokeOther1 = new Pokemon("Rotom - Frost");
@@ -557,7 +525,7 @@ public class DatabasePrep {
 					System.out.println("Wild Hold Item(s): " + cols.get(0).text());
 					Element innerTable = row.selectFirst("table");
 					if(Objects.isNull(innerTable)) {
-						String eggGroupString = localPoke.getPokeName() + " cannot breed";
+						String eggGroupString = localPoke.getName() + " cannot breed";
 						localPoke.setEggGroups(eggGroupString);
 						continue;
 					}
@@ -767,19 +735,37 @@ public class DatabasePrep {
 			session.getTransaction().commit();
 			*/
 			localPokeList.add(localPoke);
-			/*localPokeList.add(localPokeAlola);
-			localPokeList.add(localPokeGalar);
-			localPokeList.add(localPokeHisui);
-			localPokeList.add(localPokePaldea);
-			localPokeList.add(localPokeOther1);
-			localPokeList.add(localPokeOther2);
-			localPokeList.add(localPokeOther3);
-			localPokeList.add(localPokeOther4);
-			localPokeList.add(localPokeOther5);
-			*/
+			if(!Objects.isNull(localPokeAlola)) {
+			variantPokeList.add(localPokeAlola);
+			}
+			if(!Objects.isNull(localPokeGalar)) {
+				variantPokeList.add(localPokeGalar);
+				}
+			if(!Objects.isNull(localPokeHisui)) {
+				variantPokeList.add(localPokeHisui);
+				}
+			if(!Objects.isNull(localPokePaldea)) {
+				variantPokeList.add(localPokePaldea);
+				}
+			if(!Objects.isNull(localPokeOther1)) {
+				variantPokeList.add(localPokeOther1);
+				}
+			if(!Objects.isNull(localPokeOther2)) {
+				variantPokeList.add(localPokeOther2);
+				}
+			if(!Objects.isNull(localPokeOther3)) {
+				variantPokeList.add(localPokeOther3);
+				}
+			if(!Objects.isNull(localPokeOther4)) {
+				variantPokeList.add(localPokeOther4);
+				}
+			if(!Objects.isNull(localPokeOther5)) {
+				variantPokeList.add(localPokeOther5);
+				}
+			
 			for(Pokemon poke : localPokeList) {
 				if(!(Objects.isNull(poke))) {
-			Pokemon dbSample = session.get(Pokemon.class, poke.getPokeName());
+			Pokemon dbSample = session.get(Pokemon.class, poke.getName());
 			if(Objects.isNull(dbSample)) {
 				System.out.println("There is a new database entry!");
 				session.beginTransaction();
@@ -798,6 +784,12 @@ public class DatabasePrep {
 		}
 		}
 		}
+		if(!Objects.isNull(variantPokeList)) {
+			for(Pokemon poke : variantPokeList) {
+				System.out.println(poke.toString());
+			}
+			System.out.println(variantPokeList.size() + " distinct variant forms catalogued.");
+			}
 			
 			/*
 			 * How do we want to handle the move lists?
@@ -813,48 +805,14 @@ public class DatabasePrep {
 		String validatorHQL = "FROM Move";
 		List<Move> results = session.createQuery(validatorHQL).list();
 		*/
-		List<Move> results = new ArrayList<Move>();
-		Document gen9AtkDex = Jsoup.connect("https://www.serebii.net/attackdex-sv/").get();
-		Elements AtkDex = gen9AtkDex.select("option");
-		List<TextNode> attacks = AtkDex.textNodes();
-		System.out.println(AtkDex.eachText());
-		ArrayList<String> AtkDexOverall = new ArrayList<String>();
-		System.out.println("Inital attack dex data:");
+		ArrayList<Move> results = MoveHelpers.attackDexGenerator();
 		
-		for(TextNode x : attacks) {
-				if(!(x.text().startsWith("AttackDex"))) {
-					AtkDexOverall.add(x.text());
-		}
-		}
-	for(String s : AtkDexOverall) {
-		Move move = new Move();
-		move.setMoveName(s);
-		results.add(move);
-		}
 		for (Move move : results) {
-			String battleEffect = "";
-			boolean isBite = false, isBlockable = false, isBullet = false, isContact = false, isCopyable = false, isDeprecated = false;
-			boolean isGravityAffected = false, isMetronomable = false, isPowder = false, isPunch = false, isReflectable = false, isSlice = false;
-			boolean isSnatchable = false, isDefrosting = false, isSound = false, isWind = false;
 			String learnset = "";
-			int moveAcc = 0;
-			double moveBaseCrit = 0;
-			int moveBasePower = 0;
-			String moveCategory = "";
-			int movePP = 0;
-			int movePriority = 0;
-			double effectRate = 0;
-			String moveTargets = "";
-			String moveType = "";
-			String secondaryEffect = "";
-			String inDepthEffect = "";
 			TreeSet<String> learnsetTree = new TreeSet<String>();
-			Move inputMove = new Move(move.getMoveName());
-			String moveName = inputMove.getMoveName(); //Working on this part to dynamically fill the dex!
-			String urlMoveName = moveName.toLowerCase().replace("%20", "").replace(" ", "").replace("%C3%A9", "e").replace("é", "e");
-			System.out.println("Move Name: " + moveName);
-			String URL = "https://www.serebii.net/attackdex-sv/" + urlMoveName + ".shtml"; //Builds the URLs correctly!
-			Document dexEntry = Jsoup.connect((URL)).get();
+			Move inputMove = new Move(move.getName());
+			String moveName = inputMove.getName(); //Working on this part to dynamically fill the dex!
+			Document dexEntry = MoveHelpers.urlHelper(moveName);
 			/*
 			 * Taking a moment to explain the strategy here: 
 			 * The tables on each page in Serebii's records have a consistent pattern, but not every field exists for every entry.
@@ -873,376 +831,11 @@ public class DatabasePrep {
 				Element titleCol = row.selectFirst("td");
 				System.out.println("TITLE COLUMN: " + titleCol.text()); //Useful for debugging.
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Attack Name")) { //First row has Attack Name, Attack Type, Category.
-					for(int j = 0; j < (dexTableRows.size() - 1); j += 2) {
-						row = dexTableRows.select("tr").get((j + 1));
-						Elements cols = row.select("td");
-						Element col = cols.get(0);
-						Element subTitle = dexTableRows.select("tr").get(j).select("td").first();
-						System.out.println(subTitle.text());
-						
-						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Attack Name")) {
-							//moveType handling.
-							col = cols.get(1);
-							Element hrefSource = col.select("a").first();
-							String typeHref = hrefSource.attr("href"); //This isn't processing for some reason.
-							
-							moveType = typeHref.substring((typeHref.indexOf("sv/") + 3), typeHref.indexOf(".shtml"));
-							moveType = moveType.substring(0,1).toUpperCase() + moveType.substring(1);
-							System.out.println("Move Type: " + moveType);
-							inputMove.setMoveType(moveType);
-							
-							//moveCategory handling.
-							col = cols.get(2);
-							if(!(Objects.isNull(col.select("a").first()))) {
-								String categoryHref = col.select("a").first().attr("href");
-								moveCategory = categoryHref.substring((categoryHref.indexOf("sv/") + 3), categoryHref.indexOf(".shtml"));
-								moveCategory = moveCategory.substring(0,1).toUpperCase() + moveCategory.substring(1);
-								System.out.println("Move Category: " + inputMove.moveCategory);
-								inputMove.setMoveCategory(moveCategory);
-							} else {
-								moveCategory = "";
-								System.out.println(moveCategory);
-								inputMove.setMoveCategory(moveCategory);
-							}
-							
-							}
-						
-						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Power Points")) {
-							movePP = Integer.parseInt(cols.get(0).text());
-							moveBasePower = Integer.parseInt(cols.get(1).text());
-							moveAcc = Integer.parseInt(cols.get(2).text());
-							System.out.println("Move PP: " + movePP);
-							System.out.println("Move Base Power: " + moveBasePower);
-							System.out.println("Move Accuracy: " + moveAcc);
-							inputMove.setMovePP(movePP);
-							inputMove.setMoveBasePower(moveBasePower);
-							inputMove.setMoveAcc(moveAcc);
-						}
-						
-						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Battle Effect:")) {
-							col = cols.get(0);
-							battleEffect = col.text();
-							if(battleEffect.contains("This move can't be used.")) {
-								isDeprecated = true;
-							}
-							System.out.println("Battle Effect: " + battleEffect);
-							inputMove.setBattleEffect(battleEffect);
-							inputMove.setDeprecated(isDeprecated);
-						}
-						
-						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("In-Depth Effect:")) {
-								col = cols.get(0);
-								inDepthEffect = col.text();
-								System.out.println("In-Depth Effect: " + inDepthEffect);
-								inputMove.setInDepthEffect(inDepthEffect);
-							}
-						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Secondary Effect:")) {
-							secondaryEffect = col.text();
-							System.out.println("Secondary Effect: " + secondaryEffect);
-							inputMove.setSecondaryEffect(secondaryEffect);
-							
-							Element effRteCol = cols.select(".cen").first();
-							String effRateString = effRteCol.text();
-							System.out.println(effRteCol.text().toString());
-							effectRate = 0;
-							if(effRateString.equals("-- %")) {
-								effectRate = 0; //This corresponds to no effect chance under normal circumstances.
-							} else {
-								effRateString = effRateString.replace("%", "").replace(" ", "");
-								effectRate = Double.parseDouble(effRateString);
-							}
-							System.out.println("Effect Rate: " + effRateString);
-							System.out.println("Extracted value: " + effectRate);
-							inputMove.setEffectRate(effectRate);
-						}
-						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Base Critical Hit Rate")) {
-							moveBaseCrit = 0;
-							if(cols.get(0).text().equals("None")) {
-								moveBaseCrit = 0;
-							} else {
-								moveBaseCrit = Double.parseDouble(cols.get(0).text().substring(0, cols.get(0).text().length() - 1));
-							}
-							System.out.println("Base Crit: " + moveBaseCrit);
-							inputMove.setMoveBaseCrit(moveBaseCrit);
-							
-							movePriority = Integer.parseInt(cols.get(1).text());
-							System.out.println("Move Priority: " + movePriority);
-							inputMove.setMovePriority(movePriority);
-							
-							moveTargets = cols.get(2).text();
-							System.out.println("Move Targets: " + moveTargets);
-							inputMove.setMoveTargets(moveTargets);
-						}
-						}
-						
+					inputMove = MoveHelpers.attackNameTableHelper(inputMove, dexTable);
 					}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Physical Contact")) {
-					for(int j = 0; j < (dexTableRows.size() - 1); j += 2) {
-						row = dexTableRows.select("tr").get((j + 1));
-						Elements cols = row.select("td");
-						Element col = cols.get(0);
-						Element subTitle = dexTableRows.select("tr").get(j).select("td").first();
-						System.out.println(subTitle.text());
-						
-						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Physical Contact")) {
-							col = cols.get(0);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isContact = true;
-									break;
-								case "No":
-									isContact = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Makes Physical Contact?: " + isContact);
-							inputMove.setContact(isContact);
-						}
-							
-							col = cols.get(1);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isSound = true;
-									break;
-								case "No":
-									isSound = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Sound Move?: " + isSound);
-							inputMove.setSound(isSound);
-						}
-							
-							col = cols.get(2);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isPunch = true;
-									break;
-								case "No":
-									isPunch = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Punch Move?: " + isPunch);
-							inputMove.setPunch(isPunch);
-						}
-							
-							col = cols.get(3);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isBite = true;
-									break;
-								case "No":
-									isBite = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Bite Move?: " + isBite);
-							inputMove.setBite(isBite);
-						}
-							col = cols.get(4);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isSnatchable = true;
-									break;
-								case "No":
-									isSnatchable = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Snatchable?: " + isSnatchable);
-							inputMove.setSnatchable(isSnatchable);
-						}
-					}
-					
-						if(!(Objects.isNull(subTitle.text())) && subTitle.text().contains("Slicing Move")) {
-							col = cols.get(0);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isSlice = true;
-									break;
-								case "No":
-									isSlice = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Slicing Move?: " + isSlice);
-							inputMove.setSlice(isSlice);
-						}
-							
-							col = cols.get(1);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isBullet = true;
-									break;
-								case "No":
-									isBullet = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Bullet Move?: " + isBullet);
-							inputMove.setBullet(isBullet);
-						}
-							
-							col = cols.get(2);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isWind = true;
-									break;
-								case "No":
-									isWind = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Wind Move?: " + isWind);
-							inputMove.setWind(isWind);
-						}
-							
-							col = cols.get(3);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isPowder = true;
-									break;
-								case "No":
-									isPowder = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Powder Move: " + isPowder);
-							inputMove.setPowder(isPowder);
-						}
-							col = cols.get(4);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isMetronomable = true;
-									break;
-								case "No":
-									isMetronomable = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Metronome?: " + isMetronomable);
-							inputMove.setMetronomable(isMetronomable);
-						}
-					}
-						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Affected by Gravity")) {
-							col = cols.get(0);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isGravityAffected = true;
-									break;
-								case "No":
-									isGravityAffected = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Affected by Gravity?: " + isGravityAffected);
-							inputMove.setGravityAffected(isGravityAffected);
-						}
-							
-							col = cols.get(1);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isDefrosting = true;
-									break;
-								case "No":
-									isDefrosting = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Defrosts on use?: " + isDefrosting);
-							inputMove.setDefrosting(isDefrosting);
-						}
-							
-							col = cols.get(2);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isReflectable = true;
-									break;
-								case "No":
-									isReflectable = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Reflected by Magic Coat/Bounce?: " + isReflectable);
-							inputMove.setReflectable(isReflectable);
-						}
-							
-							col = cols.get(3);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isBlockable = true;
-									break;
-								case "No":
-									isBlockable = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Blocked by moves like Protect?: " + isBlockable);
-							inputMove.setBlockable(isBlockable);
-						}
-							col = cols.get(4);
-							if(!(Objects.isNull(col.text()))) {
-								switch (col.text()) {
-								case "Yes":
-									isCopyable = true;
-									break;
-								case "No":
-									isCopyable = false;
-									break;
-								default:
-									System.out.println("This is an invalid state!");
-									throw new IllegalArgumentException("Answer does not map to boolean.");
-							}
-							System.out.println("Copyable by Mirror Move?: " + isCopyable);
-							inputMove.setCopyable(isCopyable);
-							
-						}
-					}
-				}	
+					inputMove = MoveHelpers.physicalContactTableHelper(inputMove, dexTable);	
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("No.")) {
@@ -1259,6 +852,7 @@ public class DatabasePrep {
 					}
 					}
 				}
+			
 			learnset = learnsetTree.toString();
 			if(learnset.isEmpty() || learnset.equals("[]")) {
 				learnset = "None";
@@ -1269,7 +863,7 @@ public class DatabasePrep {
 				
 				Move dbSample = session.get(Move.class, moveName);
 				 
-				if (!(Objects.isNull(dbSample)) && dbSample.getMoveName().equals(inputMove.getMoveName()) && dbSample.toString().equals(inputMove.toString())) {
+				if (!(Objects.isNull(dbSample)) && dbSample.getName().equals(inputMove.getName()) && dbSample.toString().equals(inputMove.toString())) {
 					System.out.println("Nothing to do here.");
 					continue;
 					} 

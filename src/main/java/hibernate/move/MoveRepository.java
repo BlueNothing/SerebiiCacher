@@ -1,4 +1,4 @@
-package hibernate.Repository;
+package hibernate.move;
 
 import java.util.List;
 
@@ -6,8 +6,7 @@ import org.hibernate.Session;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import hibernate.HibernateUtil;
-import hibernate.Move;
-import hibernate.Pokemon;
+import hibernate.pokemon.Pokemon;
 
 public interface MoveRepository extends JpaRepository<Move, String>{
 

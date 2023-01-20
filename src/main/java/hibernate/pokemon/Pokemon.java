@@ -1,4 +1,4 @@
-package hibernate;
+package hibernate.pokemon;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class Pokemon {
 	
     @Id
     @Column(name = "name")
-    private String pokeName;
+    private String name;
 
     @Column(name = "types")
     private String pokeTypes;
@@ -119,7 +119,7 @@ public class Pokemon {
 	public int hashCode() {
 		return Objects.hash(abilities, baseAtk, baseDef, baseHP, baseSpAtk, baseSpDef, baseSpd, bst, capRate,
 				classification, eggGroups, eggMoves, eggSteps, evRewardAmt, evRewardAttr, height, immunities,
-				levelMoves, neutrals, otherMoves, pokeName, pokeTypes, resistances, tmMoves, totalMoves, weaknesses,
+				levelMoves, neutrals, otherMoves, name, pokeTypes, resistances, tmMoves, totalMoves, weaknesses,
 				weight);
 	}
 
@@ -141,7 +141,7 @@ public class Pokemon {
 				&& evRewardAmt == other.evRewardAmt && Objects.equals(evRewardAttr, other.evRewardAttr)
 				&& Objects.equals(height, other.height) && Objects.equals(immunities, other.immunities)
 				&& Objects.equals(levelMoves, other.levelMoves) && Objects.equals(neutrals, other.neutrals)
-				&& Objects.equals(otherMoves, other.otherMoves) && Objects.equals(pokeName, other.pokeName)
+				&& Objects.equals(otherMoves, other.otherMoves) && Objects.equals(name, other.name)
 				&& Objects.equals(pokeTypes, other.pokeTypes) && Objects.equals(resistances, other.resistances)
 				&& Objects.equals(tmMoves, other.tmMoves) && Objects.equals(totalMoves, other.totalMoves)
 				&& Objects.equals(weaknesses, other.weaknesses) && Objects.equals(weight, other.weight);
@@ -150,7 +150,7 @@ public class Pokemon {
 
 
 	public Pokemon() {
-		this.pokeName = "MissingNo";
+		this.name = "MissingNo";
 		this.pokeTypes = null;
 		this.classification = null;
 		this.height = null;
@@ -174,8 +174,8 @@ public class Pokemon {
 		this.bst = 0;
     }
     
-    public Pokemon(String pokeName) {
-    	this.pokeName = pokeName;
+    public Pokemon(String name) {
+    	this.name = name;
     	this.pokeTypes = null;
 		this.classification = null;
 		this.height = null;
@@ -200,12 +200,12 @@ public class Pokemon {
     }
 
 	
-    public Pokemon(String pokeName, String pokeTypes, String classification, String height, String weight, Double capRate,
+    public Pokemon(String name, String pokeTypes, String classification, String height, String weight, Double capRate,
 			Integer eggSteps, String abilities, Integer evRewardAmt, String evRewardAttr, String levelMoves, String tmMoves,
 			String otherMoves, String eggMoves, String totalMoves, Integer baseHP, Integer baseAtk, Integer baseDef,
 			Integer baseSpAtk, Integer baseSpDef, Integer baseSpd, Integer bst) {
 		super();
-		this.pokeName = pokeName;
+		this.name = name;
 		this.pokeTypes = pokeTypes;
 		this.classification = classification;
 		this.height = height;
@@ -229,12 +229,12 @@ public class Pokemon {
 		this.bst = bst;
 	}
 
-	public String getPokeName() {
-		return pokeName;
+	public String getName() {
+		return name;
 	}
 
-	public void setPokeName(String pokeName) {
-		this.pokeName = pokeName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getPokeTypes() {
@@ -447,7 +447,7 @@ public class Pokemon {
 
 	@Override
 	public String toString() {
-		return "Pokemon [pokeName=" + pokeName + ", pokeTypes=" + pokeTypes + ", classification=" + classification
+		return "Pokemon [name=" + name + ", pokeTypes=" + pokeTypes + ", classification=" + classification
 				+ ", height=" + height + ", weight=" + weight + ", capRate=" + capRate + ", eggSteps=" + eggSteps
 				+ ", abilities=" + abilities + ", evRewardAmt=" + evRewardAmt + ", evRewardAttr=" + evRewardAttr
 				+ ", weaknesses=" + weaknesses + ", neutrals=" + neutrals + ", resistances=" + resistances
