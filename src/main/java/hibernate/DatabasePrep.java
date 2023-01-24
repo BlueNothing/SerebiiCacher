@@ -133,7 +133,7 @@ public class DatabasePrep {
 			localAbility.setAccessSet(accessSet);
 			System.out.println("Access Set: " + accessSet);
 		//The code now effectively connects to the webpage for most abilities.
-			GeneralHelpers.dbPersist(localAbility, session);
+			AbilityHelpers.dbPersist(localAbility, session);
 		
 		}
 	}
@@ -861,25 +861,7 @@ public class DatabasePrep {
 			inputMove.setLearnset(learnset);
 			System.out.println(inputMove.toString());
 				
-				Move dbSample = session.get(Move.class, moveName);
-				 
-				if (!(Objects.isNull(dbSample)) && dbSample.getName().equals(inputMove.getName()) && dbSample.toString().equals(inputMove.toString())) {
-					System.out.println("Nothing to do here.");
-					continue;
-					} 
-				else if(Objects.isNull(dbSample)) {
-					System.out.println("There is a new database entry!");
-					session.beginTransaction();
-					session.persist(inputMove);
-					session.getTransaction().commit();
-					continue;
-				}
-				else if (!(dbSample.toString().equals(inputMove.toString()))){
-					System.out.println("There is new data!");
-					session.beginTransaction();
-					session.merge(inputMove);
-					session.getTransaction().commit();
-					}
+			MoveHelpers.dbPersist(inputMove, session);
 	}
 }
 	

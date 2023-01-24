@@ -22,8 +22,8 @@ import jakarta.persistence.Table;
 public class Pokemon {
 	
     @Id
-    @Column(name = "name")
-    private String name;
+    @Column(name = "name", length = 255)
+    private String name = "MissingNo";
 
     @Column(name = "types")
     private String pokeTypes;

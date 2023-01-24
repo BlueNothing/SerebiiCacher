@@ -14,7 +14,7 @@ public interface MoveRepository extends JpaRepository<Move, String>{
 	default
 	List<Move> findAll(){
 		Session session = HibernateUtil.getSessionFactory().openSession();
-		String HQL = "FROM moves";
+		String HQL = "FROM Move";
 		List<Move> moves = session.createQuery(HQL).list();
 		session.close();
 		return moves;

@@ -22,8 +22,8 @@ import jakarta.persistence.Table;
 @Table(name = "abilities")
 public class Ability {
 	@Id
-    @Column(name = "name")
-    private String name;
+    @Column(name = "name", length=255)
+    private String name = "None";
 
     @Column(name = "gameText", length = 1020)
     private String abilityGameText;

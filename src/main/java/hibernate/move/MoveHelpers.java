@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -33,6 +34,27 @@ public class MoveHelpers {
 		results.add(move);
 		}
 	return results;
+	}
+	
+	
+	public static void dbPersist(Move inputMove, Session session) {
+		Move dbSample = session.get(Move.class, inputMove.getName());
+		 
+		if (!(Objects.isNull(dbSample)) && dbSample.getName().equals(inputMove.getName()) && dbSample.toString().equals(inputMove.toString())) {
+			System.out.println("Nothing to do here.");
+			} 
+		else if(Objects.isNull(dbSample)) {
+			System.out.println("There is a new database entry!");
+			session.beginTransaction();
+			session.persist(inputMove);
+			session.getTransaction().commit();
+		}
+		else if (!(dbSample.toString().equals(inputMove.toString()))){
+			System.out.println("There is new data!");
+			session.beginTransaction();
+			session.merge(inputMove);
+			session.getTransaction().commit();
+			}
 	}
 	
 	public static Document urlHelper(String moveName) throws IOException {
@@ -113,7 +135,7 @@ public class MoveHelpers {
 				}
 				System.out.println("Battle Effect: " + battleEffect);
 				inputMove.setBattleEffect(battleEffect);
-				inputMove.setDeprecated(isDeprecated);
+				inputMove.setIsDeprecated(isDeprecated);
 			}
 			
 			if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("In-Depth Effect:")) {
@@ -193,7 +215,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Makes Physical Contact?: " + isContact);
-				inputMove.setContact(isContact);
+				inputMove.setIsContact(isContact);
 			}
 				
 				col = cols.get(1);
@@ -210,7 +232,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Sound Move?: " + isSound);
-				inputMove.setSound(isSound);
+				inputMove.setIsSound(isSound);
 			}
 				
 				col = cols.get(2);
@@ -227,7 +249,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Punch Move?: " + isPunch);
-				inputMove.setPunch(isPunch);
+				inputMove.setIsPunch(isPunch);
 			}
 				
 				col = cols.get(3);
@@ -244,7 +266,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Bite Move?: " + isBite);
-				inputMove.setBite(isBite);
+				inputMove.setIsBite(isBite);
 			}
 				col = cols.get(4);
 				if(!(Objects.isNull(col.text()))) {
@@ -260,7 +282,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Snatchable?: " + isSnatchable);
-				inputMove.setSnatchable(isSnatchable);
+				inputMove.setIsSnatchable(isSnatchable);
 			}
 		}
 		
@@ -279,7 +301,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Slicing Move?: " + isSlice);
-				inputMove.setSlice(isSlice);
+				inputMove.setIsSlice(isSlice);
 			}
 				
 				col = cols.get(1);
@@ -296,7 +318,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Bullet Move?: " + isBullet);
-				inputMove.setBullet(isBullet);
+				inputMove.setIsBullet(isBullet);
 			}
 				
 				col = cols.get(2);
@@ -313,7 +335,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Wind Move?: " + isWind);
-				inputMove.setWind(isWind);
+				inputMove.setIsWind(isWind);
 			}
 				
 				col = cols.get(3);
@@ -330,7 +352,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Powder Move: " + isPowder);
-				inputMove.setPowder(isPowder);
+				inputMove.setIsPowder(isPowder);
 			}
 				col = cols.get(4);
 				if(!(Objects.isNull(col.text()))) {
@@ -346,7 +368,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Metronome?: " + isMetronomable);
-				inputMove.setMetronomable(isMetronomable);
+				inputMove.setIsMetronomable(isMetronomable);
 			}
 		}
 			if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Affected by Gravity")) {
@@ -364,7 +386,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Affected by Gravity?: " + isGravityAffected);
-				inputMove.setGravityAffected(isGravityAffected);
+				inputMove.setIsGravityAffected(isGravityAffected);
 			}
 				
 				col = cols.get(1);
@@ -381,7 +403,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Defrosts on use?: " + isDefrosting);
-				inputMove.setDefrosting(isDefrosting);
+				inputMove.setIsDefrosting(isDefrosting);
 			}
 				
 				col = cols.get(2);
@@ -398,7 +420,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Reflected by Magic Coat/Bounce?: " + isReflectable);
-				inputMove.setReflectable(isReflectable);
+				inputMove.setIsReflectable(isReflectable);
 			}
 				
 				col = cols.get(3);
@@ -415,7 +437,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Blocked by moves like Protect?: " + isBlockable);
-				inputMove.setBlockable(isBlockable);
+				inputMove.setIsBlockable(isBlockable);
 			}
 				col = cols.get(4);
 				if(!(Objects.isNull(col.text()))) {
@@ -431,7 +453,7 @@ public class MoveHelpers {
 						throw new IllegalArgumentException("Answer does not map to boolean.");
 				}
 				System.out.println("Copyable by Mirror Move?: " + isCopyable);
-				inputMove.setCopyable(isCopyable);
+				inputMove.setIsCopyable(isCopyable);
 				
 			}
 		}

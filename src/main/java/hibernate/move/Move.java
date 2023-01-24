@@ -19,11 +19,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "moves")
+@Table(name = "attacks")
 public class Move {
 	@Id
-	@Column(name="name", length = 10000)
-	private String name;
+	@Column(name="name", length=10000)
+	private String name = "None";
 	
 	@Column(name="movetype") 
 	String moveType;
@@ -111,6 +111,7 @@ public class Move {
 	
 	@Column(name="learnset", length = 10000)
 	private String learnset;
+
 
 	public String getName() {
 		return name;
@@ -216,124 +217,132 @@ public class Move {
 		this.moveTargets = moveTargets;
 	}
 
-	public Boolean isContact() {
+	public Boolean getIsContact() {
 		return isContact;
 	}
 
-	public void setContact(Boolean isContact) {
+	public void setIsContact(Boolean isContact) {
 		this.isContact = isContact;
 	}
 
-	public Boolean isSound() {
+	public Boolean getIsSound() {
 		return isSound;
 	}
 
-	public void setSound(Boolean isSound) {
+	public void setIsSound(Boolean isSound) {
 		this.isSound = isSound;
 	}
 
-	public Boolean isPunch() {
+	public Boolean getIsPunch() {
 		return isPunch;
 	}
 
-	public void setPunch(Boolean isPunch) {
+	public void setIsPunch(Boolean isPunch) {
 		this.isPunch = isPunch;
 	}
 
-	public Boolean isBite() {
+	public Boolean getIsBite() {
 		return isBite;
 	}
 
-	public void setBite(Boolean isBite) {
+	public void setIsBite(Boolean isBite) {
 		this.isBite = isBite;
 	}
 
-	public Boolean isSnatchable() {
+	public Boolean getIsSnatchable() {
 		return isSnatchable;
 	}
 
-	public void setSnatchable(Boolean isSnatchable) {
+	public void setIsSnatchable(Boolean isSnatchable) {
 		this.isSnatchable = isSnatchable;
 	}
 
-	public Boolean isSlice() {
+	public Boolean getIsSlice() {
 		return isSlice;
 	}
 
-	public void setSlice(Boolean isSlice) {
+	public void setIsSlice(Boolean isSlice) {
 		this.isSlice = isSlice;
 	}
 
-	public Boolean isBullet() {
+	public Boolean getIsBullet() {
 		return isBullet;
 	}
 
-	public void setBullet(Boolean isBullet) {
+	public void setIsBullet(Boolean isBullet) {
 		this.isBullet = isBullet;
 	}
 
-	public Boolean isWind() {
+	public Boolean getIsWind() {
 		return isWind;
 	}
 
-	public void setWind(Boolean isWind) {
+	public void setIsWind(Boolean isWind) {
 		this.isWind = isWind;
 	}
 
-	public Boolean isPowder() {
+	public Boolean getIsPowder() {
 		return isPowder;
 	}
 
-	public void setPowder(Boolean isPowder) {
+	public void setIsPowder(Boolean isPowder) {
 		this.isPowder = isPowder;
 	}
 
-	public Boolean isMetronomable() {
+	public Boolean getIsMetronomable() {
 		return isMetronomable;
 	}
 
-	public void setMetronomable(Boolean isMetronomable) {
+	public void setIsMetronomable(Boolean isMetronomable) {
 		this.isMetronomable = isMetronomable;
 	}
 
-	public Boolean isGravityAffected() {
+	public Boolean getIsGravityAffected() {
 		return isGravityAffected;
 	}
 
-	public void setGravityAffected(Boolean isGravityAffected) {
+	public void setIsGravityAffected(Boolean isGravityAffected) {
 		this.isGravityAffected = isGravityAffected;
 	}
-	
-	public Boolean isDefrosting() {
+
+	public Boolean getIsDefrosting() {
 		return isDefrosting;
 	}
 
-	public void setDefrosting(Boolean isDefrosting) {
+	public void setIsDefrosting(Boolean isDefrosting) {
 		this.isDefrosting = isDefrosting;
 	}
 
-	public Boolean isReflectable() {
+	public Boolean getIsReflectable() {
 		return isReflectable;
 	}
 
-	public void setReflectable(Boolean isReflectable) {
+	public void setIsReflectable(Boolean isReflectable) {
 		this.isReflectable = isReflectable;
 	}
 
-	public Boolean isBlockable() {
+	public Boolean getIsBlockable() {
 		return isBlockable;
 	}
 
-	public void setBlockable(Boolean isBlockable) {
+	public void setIsBlockable(Boolean isBlockable) {
 		this.isBlockable = isBlockable;
 	}
 
-	public Boolean isCopyable() {
+	public Boolean getIsCopyable() {
 		return isCopyable;
 	}
 
-	public void setCopyable(Boolean isCopyable) {
+	public void setIsCopyable(Boolean isCopyable) {
 		this.isCopyable = isCopyable;
+	}
+
+	public Boolean getIsDeprecated() {
+		return isDeprecated;
+	}
+
+	public void setIsDeprecated(Boolean isDeprecated) {
+		this.isDeprecated = isDeprecated;
 	}
 
 	public String getLearnset() {
@@ -344,22 +353,12 @@ public class Move {
 		this.learnset = learnset;
 	}
 
-	public Boolean isDeprecated() {
-		return isDeprecated;
-	}
-
-	public void setDeprecated(Boolean isDeprecated) {
-		this.isDeprecated = isDeprecated;
-	}
-	
-	
-
 	@Override
 	public int hashCode() {
 		return Objects.hash(battleEffect, effectRate, inDepthEffect, isBite, isBlockable, isBullet, isContact,
 				isCopyable, isDefrosting, isDeprecated, isGravityAffected, isMetronomable, isPowder, isPunch,
 				isReflectable, isSlice, isSnatchable, isSound, isWind, learnset, moveAcc, moveBaseCrit, moveBasePower,
-				moveCategory, name, movePP, movePriority, moveTargets, moveType, secondaryEffect);
+				moveCategory, movePP, movePriority, moveTargets, moveType, name, secondaryEffect);
 	}
 
 	@Override
@@ -371,35 +370,37 @@ public class Move {
 		if (getClass() != obj.getClass())
 			return false;
 		Move other = (Move) obj;
-		return Objects.equals(battleEffect, other.battleEffect)
-				&& Double.doubleToLongBits(effectRate) == Double.doubleToLongBits(other.effectRate)
-				&& Objects.equals(inDepthEffect, other.inDepthEffect) && isBite == other.isBite
-				&& isBlockable == other.isBlockable && isBullet == other.isBullet && isContact == other.isContact
-				&& isCopyable == other.isCopyable && isDefrosting == other.isDefrosting
-				&& isDeprecated == other.isDeprecated && isGravityAffected == other.isGravityAffected
-				&& isMetronomable == other.isMetronomable && isPowder == other.isPowder && isPunch == other.isPunch
-				&& isReflectable == other.isReflectable && isSlice == other.isSlice
-				&& isSnatchable == other.isSnatchable && isSound == other.isSound && isWind == other.isWind
-				&& Objects.equals(learnset, other.learnset) && moveAcc == other.moveAcc
-				&& moveBaseCrit == other.moveBaseCrit && moveBasePower == other.moveBasePower
-				&& Objects.equals(moveCategory, other.moveCategory) && Objects.equals(name, other.name)
-				&& movePP == other.movePP && movePriority == other.movePriority
-				&& Objects.equals(moveTargets, other.moveTargets) && Objects.equals(moveType, other.moveType)
+		return Objects.equals(battleEffect, other.battleEffect) && Objects.equals(effectRate, other.effectRate)
+				&& Objects.equals(inDepthEffect, other.inDepthEffect) && Objects.equals(isBite, other.isBite)
+				&& Objects.equals(isBlockable, other.isBlockable) && Objects.equals(isBullet, other.isBullet)
+				&& Objects.equals(isContact, other.isContact) && Objects.equals(isCopyable, other.isCopyable)
+				&& Objects.equals(isDefrosting, other.isDefrosting) && Objects.equals(isDeprecated, other.isDeprecated)
+				&& Objects.equals(isGravityAffected, other.isGravityAffected)
+				&& Objects.equals(isMetronomable, other.isMetronomable) && Objects.equals(isPowder, other.isPowder)
+				&& Objects.equals(isPunch, other.isPunch) && Objects.equals(isReflectable, other.isReflectable)
+				&& Objects.equals(isSlice, other.isSlice) && Objects.equals(isSnatchable, other.isSnatchable)
+				&& Objects.equals(isSound, other.isSound) && Objects.equals(isWind, other.isWind)
+				&& Objects.equals(learnset, other.learnset) && Objects.equals(moveAcc, other.moveAcc)
+				&& Objects.equals(moveBaseCrit, other.moveBaseCrit)
+				&& Objects.equals(moveBasePower, other.moveBasePower)
+				&& Objects.equals(moveCategory, other.moveCategory) && Objects.equals(movePP, other.movePP)
+				&& Objects.equals(movePriority, other.movePriority) && Objects.equals(moveTargets, other.moveTargets)
+				&& Objects.equals(moveType, other.moveType) && Objects.equals(name, other.name)
 				&& Objects.equals(secondaryEffect, other.secondaryEffect);
 	}
 
 	@Override
 	public String toString() {
-		return "Move [name=" + name + ", moveType=" + moveType + ", moveCategory=" + moveCategory + ", movePP="
-				+ movePP + ", moveBasePower=" + moveBasePower + ", moveAcc=" + moveAcc + ", battleEffect="
-				+ battleEffect + ", inDepthEffect=" + inDepthEffect + ", secondaryEffect=" + secondaryEffect
-				+ ", effectRate=" + effectRate + ", moveBaseCrit=" + moveBaseCrit + ", movePriority=" + movePriority
-				+ ", moveTargets=" + moveTargets + ", isContact=" + isContact + ", isSound=" + isSound + ", isPunch="
-				+ isPunch + ", isBite=" + isBite + ", isSnatchable=" + isSnatchable + ", isSlice=" + isSlice
-				+ ", isBullet=" + isBullet + ", isWind=" + isWind + ", isPowder=" + isPowder + ", isMetronomable="
-				+ isMetronomable + ", isGravityAffected=" + isGravityAffected + ", isDefrosting=" + isDefrosting
-				+ ", isReflectable=" + isReflectable + ", isBlockable=" + isBlockable + ", isCopyable=" + isCopyable
-				+ ", isDeprecated=" + isDeprecated + ", learnset=" + learnset + "]";
+		return "Move [name=" + name + ", moveType=" + moveType + ", moveCategory=" + moveCategory + ", movePP=" + movePP
+				+ ", moveBasePower=" + moveBasePower + ", moveAcc=" + moveAcc + ", battleEffect=" + battleEffect
+				+ ", inDepthEffect=" + inDepthEffect + ", secondaryEffect=" + secondaryEffect + ", effectRate="
+				+ effectRate + ", moveBaseCrit=" + moveBaseCrit + ", movePriority=" + movePriority + ", moveTargets="
+				+ moveTargets + ", isContact=" + isContact + ", isSound=" + isSound + ", isPunch=" + isPunch
+				+ ", isBite=" + isBite + ", isSnatchable=" + isSnatchable + ", isSlice=" + isSlice + ", isBullet="
+				+ isBullet + ", isWind=" + isWind + ", isPowder=" + isPowder + ", isMetronomable=" + isMetronomable
+				+ ", isGravityAffected=" + isGravityAffected + ", isDefrosting=" + isDefrosting + ", isReflectable="
+				+ isReflectable + ", isBlockable=" + isBlockable + ", isCopyable=" + isCopyable + ", isDeprecated="
+				+ isDeprecated + ", learnset=" + learnset + "]";
 	}
 
 	public Move() {

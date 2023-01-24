@@ -14,7 +14,7 @@ public interface AbilityRepository extends JpaRepository<Ability, String>{
 	default
 	List<Ability> findAll(){
 		Session session = HibernateUtil.getSessionFactory().openSession();
-		String HQL = "FROM abilities";
+		String HQL = "FROM Ability";
 		List<Ability> abilities = session.createQuery(HQL).list();
 		session.close();
 		return abilities;

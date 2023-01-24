@@ -11,6 +11,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
+import hibernate.move.Move;
+
 public class AbilityHelpers {
 	
 	public static ArrayList<Ability> abilityListGenerator(Session session) throws IOException{
@@ -43,6 +45,24 @@ public class AbilityHelpers {
 		System.out.println(results.toString());
 		System.out.println("Starting abilityFiller");
 		return results;
+	}
+	
+	public static void dbPersist(Ability localAbility, Session session) {	
+		Ability dbSample = session.get(Ability.class, localAbility.getName());
+		System.out.println(localAbility.toString());
+	if(!(Objects.isNull(dbSample)) && dbSample.toString().equals(localAbility.toString())) {
+		System.out.println(localAbility.getName() + ": already in database. There is nothing to do here.");
+	} 
+	else if (Objects.isNull(dbSample)){
+		session.beginTransaction();
+		session.persist(localAbility);
+		session.getTransaction().commit();
+	}
+	else if(!(Objects.isNull(dbSample)) && !(dbSample.toString().equals(localAbility.toString()))) {
+		session.beginTransaction();
+		session.merge(localAbility);
+		session.getTransaction().commit();
+	} 
 	}
 
 }

@@ -14,7 +14,7 @@ public interface PokemonRepository extends JpaRepository<Pokemon, String>{
 	default
 	List<Pokemon> findAll(){
 		Session session = HibernateUtil.getSessionFactory().openSession();
-		String HQL = "FROM pokemon";
+		String HQL = "FROM Pokemon";
 		List<Pokemon> pokemon = session.createQuery(HQL).list();
 		session.close();
 		return pokemon;
