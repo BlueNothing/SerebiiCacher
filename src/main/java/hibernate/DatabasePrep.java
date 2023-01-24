@@ -854,6 +854,7 @@ public class DatabasePrep {
 				}
 			
 			learnset = learnsetTree.toString();
+			learnset = learnsetTree.toString().replace("[", "").replace("]", "");
 			if(learnset.isEmpty() || learnset.equals("[]")) {
 				learnset = "None";
 			}

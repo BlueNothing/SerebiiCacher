@@ -29,13 +29,13 @@ public class Ability {
     private String abilityGameText;
     
     @Column(name = "inDepthAbilityEffect", length = 1020)
-    private String inDepthAbilityEffect;
+    private String inDepthAbilityEffect = "None";
     
     @Column(name="overworldEffect", length = 1020)
-    private String overworldEffect;
+    private String overworldEffect = "None";
     
     @Column(name="affectedMoves", length = 3000)
-    private String affectedMoves;
+    private String affectedMoves = "None";
     
     @Column(name="accessSet", length = 1020)
     private String accessSet;
@@ -118,17 +118,17 @@ public class Ability {
 	}
 
 	public Ability() {
-		this.name = null;
-    	this.abilityGameText = null;
-    	this.inDepthAbilityEffect = null;
-    	this.overworldEffect = null;
+		this.name = "None";
+    	this.abilityGameText = "None";
+    	this.inDepthAbilityEffect = "None";
+    	this.overworldEffect = "None";
     }
     
     public Ability(String name) {
     	this.name = name;
-    	this.abilityGameText = null;
-    	this.inDepthAbilityEffect = null;
-    	this.overworldEffect = null;
+    	this.abilityGameText = "None";
+    	this.inDepthAbilityEffect = "None";
+    	this.overworldEffect = "None";
     }
 
 	public Ability(String name, String abilityGameText, String inDepthAbilityEffect, String overworldEffect,

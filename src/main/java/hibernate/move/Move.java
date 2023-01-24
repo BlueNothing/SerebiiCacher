@@ -44,19 +44,19 @@ public class Move {
 	private String battleEffect;
 	
 	@Column(name="indeptheffect", length = 10000)
-	private String inDepthEffect;
+	private String inDepthEffect = "None";
 	
 	@Column(name="secondaryeffect", length = 10000)
 	private String secondaryEffect;
 	
 	@Column(name="effectrate")
-	private Double effectRate;
+	private Double effectRate = 0.0;
 	
 	@Column(name="movebasecrit")
-	private Double moveBaseCrit;
+	private Double moveBaseCrit = 0.0;
 	
 	@Column(name="movepriority")
-	private Integer movePriority;
+	private Integer movePriority = 0;
 	
 	@Column(name="movetargets")
 	private String moveTargets;
@@ -444,4 +444,10 @@ public class Move {
 		String secondaryEffect = "";
 		String inDepthEffect = "";
 	}
+	
+	/*
+	 * Nulls or blanks currently appear in
+	 * Effect Rate, Move Base Crit, Move Priority, Move Targets, Secondary Effect, 
+	 *  
+	 */
 }

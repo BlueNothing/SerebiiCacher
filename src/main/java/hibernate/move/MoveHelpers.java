@@ -161,6 +161,9 @@ public class MoveHelpers {
 				}
 				System.out.println("Effect Rate: " + effRateString);
 				System.out.println("Extracted value: " + effectRate);
+				if(Objects.isNull(effectRate)) {
+					effectRate = 0;
+				}
 				inputMove.setEffectRate(effectRate);
 			}
 			if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Base Critical Hit Rate")) {
