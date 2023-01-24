@@ -14,6 +14,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 
 import hibernate.ability.Ability;
 import hibernate.ability.AbilityHelpers;
@@ -444,7 +445,7 @@ public class DatabasePrep {
 									localPoke.setEvRewardAttr("Sp. Attack [M]; Sp. Defense [F]");
 									continue;
 								}
-								if(evString.contains("Alolan") || evString.contains("Galarian") || evString.contains("Hisuian")) {
+								if(evString.contains("Alolan") || evString.contains("Galarian") || evString.contains("Hisuian") || evString.contains("Paldean")) {
 									System.out.println("SPECIAL CASE");
 								}
 							evAmt = Integer.parseInt(String.valueOf(evString.charAt(0)));
@@ -577,6 +578,145 @@ public class DatabasePrep {
 					System.out.println(levelMoves);
 					overallMoves += levelMoves + ",";
 					localPoke.setLevelMoves(levelMoves);
+				}
+				
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Alola Form Level Up")) {
+					if(Objects.isNull(localPokeAlola)) {
+						localPokeAlola = new Pokemon(localPoke);
+					}
+					System.out.println("Level Moves Table - Alola");
+					Elements rows = dexTable.select("tr");
+					levelMoves = "";
+					for(int k = 0; k < rows.size(); k++) {
+						Element localRow = rows.get(k);
+						if(localRow.text().equals("Standard Level Up") || localRow.text().equals("Level Attack Name Type Cat. Att. Acc. PP Effect %")) //These are header rows, which are out of scope.
+							continue;
+							else {
+							Elements localCol = localRow.select("td"); //These are where all of the right types of data are found.
+							if(localCol.size() == 1) {
+								continue; //These are description rows, which are useless for a simple list of moves.
+							} else {
+								levelMoves += localCol.get(1).text() + ",";
+							}
+						}
+					}
+					levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					while(levelMoves.contains(",,")) {
+						levelMoves = levelMoves.replace(",,", ",");
+					}
+					while(levelMoves.startsWith(" ,")) {
+						levelMoves = levelMoves.substring(2);
+					}
+					if(levelMoves.endsWith(",")) {
+						levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					}
+					System.out.println(levelMoves);
+					overallMoves += levelMoves + ",";
+					localPokeAlola.setLevelMoves(levelMoves);
+				}
+				
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Galarian Form Level Up")) {
+					if(Objects.isNull(localPokeGalar)) {
+						localPokeGalar = new Pokemon(localPoke);
+					}
+					System.out.println("Level Moves Table - Galar");
+					Elements rows = dexTable.select("tr");
+					levelMoves = "";
+					for(int k = 0; k < rows.size(); k++) {
+						Element localRow = rows.get(k);
+						if(localRow.text().equals("Standard Level Up") || localRow.text().equals("Level Attack Name Type Cat. Att. Acc. PP Effect %")) //These are header rows, which are out of scope.
+							continue;
+							else {
+							Elements localCol = localRow.select("td"); //These are where all of the right types of data are found.
+							if(localCol.size() == 1) {
+								continue; //These are description rows, which are useless for a simple list of moves.
+							} else {
+								levelMoves += localCol.get(1).text() + ",";
+							}
+						}
+					}
+					levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					while(levelMoves.contains(",,")) {
+						levelMoves = levelMoves.replace(",,", ",");
+					}
+					while(levelMoves.startsWith(" ,")) {
+						levelMoves = levelMoves.substring(2);
+					}
+					if(levelMoves.endsWith(",")) {
+						levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					}
+					System.out.println(levelMoves);
+					overallMoves += levelMoves + ",";
+					localPokeGalar.setLevelMoves(levelMoves);
+				}
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Hisuian Form Level Up")) {
+					if(Objects.isNull(localPokeHisui)) {
+						localPokeHisui = new Pokemon(localPoke);
+					}
+					System.out.println("Level Moves Table - Hisui");
+					Elements rows = dexTable.select("tr");
+					levelMoves = "";
+					for(int k = 0; k < rows.size(); k++) {
+						Element localRow = rows.get(k);
+						if(localRow.text().equals("Standard Level Up") || localRow.text().equals("Level Attack Name Type Cat. Att. Acc. PP Effect %")) //These are header rows, which are out of scope.
+							continue;
+							else {
+							Elements localCol = localRow.select("td"); //These are where all of the right types of data are found.
+							if(localCol.size() == 1) {
+								continue; //These are description rows, which are useless for a simple list of moves.
+							} else {
+								levelMoves += localCol.get(1).text() + ",";
+							}
+						}
+					}
+					levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					while(levelMoves.contains(",,")) {
+						levelMoves = levelMoves.replace(",,", ",");
+					}
+					while(levelMoves.startsWith(" ,")) {
+						levelMoves = levelMoves.substring(2);
+					}
+					if(levelMoves.endsWith(",")) {
+						levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					}
+					System.out.println(levelMoves);
+					overallMoves += levelMoves + ",";
+					localPokeHisui.setLevelMoves(levelMoves);
+				}
+				
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Paldean Form Level Up")) {
+					if(Objects.isNull(localPokePaldea)) {
+						localPokePaldea = new Pokemon(localPoke);
+					}
+					System.out.println("Level Moves Table - Paldea");
+					Elements rows = dexTable.select("tr");
+					levelMoves = "";
+					for(int k = 0; k < rows.size(); k++) {
+						Element localRow = rows.get(k);
+						if(localRow.text().equals("Standard Level Up") || localRow.text().equals("Level Attack Name Type Cat. Att. Acc. PP Effect %")) //These are header rows, which are out of scope.
+							continue;
+							else {
+							Elements localCol = localRow.select("td"); //These are where all of the right types of data are found.
+							if(localCol.size() == 1) {
+								continue; //These are description rows, which are useless for a simple list of moves.
+							} else {
+								levelMoves += localCol.get(1).text() + ",";
+							}
+						}
+					}
+					levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					while(levelMoves.contains(",,")) {
+						levelMoves = levelMoves.replace(",,", ",");
+					}
+					while(levelMoves.startsWith(" ,")) {
+						levelMoves = levelMoves.substring(2);
+					}
+					if(levelMoves.endsWith(",")) {
+						levelMoves = levelMoves.substring(0, levelMoves.length() - 1);
+					}
+					System.out.println(levelMoves);
+					overallMoves += levelMoves + ",";
+					localPokePaldea.setLevelMoves(levelMoves);
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Technical Machine Attacks")) {
@@ -740,30 +880,39 @@ public class DatabasePrep {
 			*/
 			localPokeList.add(localPoke);
 			if(!Objects.isNull(localPokeAlola)) {
+			localPokeList.add(localPokeAlola);
 			variantPokeList.add(localPokeAlola);
 			}
 			if(!Objects.isNull(localPokeGalar)) {
+				localPokeList.add(localPokeGalar);
 				variantPokeList.add(localPokeGalar);
 				}
 			if(!Objects.isNull(localPokeHisui)) {
+				localPokeList.add(localPokeHisui);
 				variantPokeList.add(localPokeHisui);
 				}
 			if(!Objects.isNull(localPokePaldea)) {
+				localPokeList.add(localPokePaldea);
 				variantPokeList.add(localPokePaldea);
 				}
 			if(!Objects.isNull(localPokeOther1)) {
+				localPokeList.add(localPokeOther1);
 				variantPokeList.add(localPokeOther1);
 				}
 			if(!Objects.isNull(localPokeOther2)) {
+				localPokeList.add(localPokeOther2);
 				variantPokeList.add(localPokeOther2);
 				}
 			if(!Objects.isNull(localPokeOther3)) {
+				localPokeList.add(localPokeOther3);
 				variantPokeList.add(localPokeOther3);
 				}
 			if(!Objects.isNull(localPokeOther4)) {
+				localPokeList.add(localPokeOther4);
 				variantPokeList.add(localPokeOther4);
 				}
 			if(!Objects.isNull(localPokeOther5)) {
+				localPokeList.add(localPokeOther5);
 				variantPokeList.add(localPokeOther5);
 				}
 			

@@ -198,6 +198,31 @@ public class Pokemon {
 		this.baseSpd = 0;
 		this.bst = 0;
     }
+    
+    public Pokemon(Pokemon pokeInput) {
+    	this.name = pokeInput.getName();
+		this.pokeTypes = pokeInput.getPokeTypes();
+		this.classification = pokeInput.getClassification();
+		this.height = pokeInput.getHeight();
+		this.weight = pokeInput.getWeight();
+		this.capRate = pokeInput.getCapRate();
+		this.eggSteps = pokeInput.getEggSteps();
+		this.abilities = pokeInput.getAbilities();
+		this.evRewardAmt = pokeInput.getEvRewardAmt();
+		this.evRewardAttr = pokeInput.getEvRewardAttr();
+		this.levelMoves = pokeInput.getLevelMoves();
+		this.tmMoves = pokeInput.getTmMoves();
+		this.otherMoves = pokeInput.getOtherMoves();
+		this.eggMoves = pokeInput.getEggMoves();
+		this.totalMoves = pokeInput.getTotalMoves();
+		this.baseHP = pokeInput.getBaseHP();
+		this.baseAtk = pokeInput.getBaseAtk();
+		this.baseDef = pokeInput.getBaseDef();
+		this.baseSpAtk = pokeInput.getBaseSpAtk();
+		this.baseSpDef = pokeInput.getBaseSpDef();
+		this.baseSpd = pokeInput.getBaseSpd();
+		this.bst = pokeInput.getBst();
+    }
 
 	
     public Pokemon(String name, String pokeTypes, String classification, String height, String weight, Double capRate,
