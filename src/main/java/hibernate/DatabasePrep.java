@@ -149,6 +149,9 @@ public class DatabasePrep {
 		 * Alternate forms are characterized by a few distinct properties - 
 		 * Alternate forms may have a different type, a different classification, different weaknesses, different abilities, a different moveset, different stats, and/or different EVs.
 		 * 
+		 * 
+		 * 
+		 * TODO: Figure out why CapRate, Classification, EggSteps, Height, Weight are not evaluating properly.
 		*/
 		ArrayList<Pokemon> variantPokeList = new ArrayList<Pokemon>();
 		Document palDex = Jsoup.connect("https://www.serebii.net/pokedex-sv/").get();
@@ -252,7 +255,7 @@ public class DatabasePrep {
 						}
 						Element col = cols.get(0);
 						Element subTitle = dexTableRows.select("tr").get(j).select("td").first();
-						System.out.println(subTitle.text());
+						System.out.println("SubTitle: " + subTitle.text());
 						if(j == 0) {
 						Element typeData = cols.select(".cen").get(0);
 						if(!Objects.isNull(typeData)) {
@@ -355,39 +358,40 @@ public class DatabasePrep {
 						localPoke.setPokeTypes(typeList);
 						}
 						}
-							if(subTitle.text().equals("Classification") ) {
+						}
+							if(subTitle.text().contains("Classification") ) {
 							System.out.println("Classification sub-table");
 							col = cols.get(0);
 							String classification = col.text();
-							System.out.println(classification);
+							System.out.println("Classification: " + classification);
 							localPoke.setClassification(classification);
+							System.out.println("Classification set!");
 							
 							col = cols.get(1);
 							String height = col.text();
 							height = height.substring(0, (height.indexOf("\"") + 1));
-							System.out.println(height);
+							System.out.println("Height: " + height);
 							localPoke.setHeight(height);
 							
 							col = cols.get(2);
 							String weight = col.text();
 							weight = weight.substring(0, weight.indexOf("lbs") + 2);
 							weight = weight.replace("lb", " lbs");
-							System.out.println(weight);
+							System.out.println("Weight: " + weight);
 							localPoke.setWeight(weight);
 							
 							col = cols.get(3);
 							double capRate = Double.parseDouble(col.text());
-							System.out.println(capRate);
+							System.out.println("Capture Rate: " + capRate);
 							localPoke.setCapRate(capRate);
 							
 							col = cols.get(4);
 							String eggStepString = col.text().replaceAll(",", "");
 							int eggSteps = Integer.parseInt(eggStepString);
-							System.out.println(eggSteps);
+							System.out.println("Egg Steps: " + eggSteps);
 							localPoke.setEggSteps(eggSteps);
 					}
 					
-				}
 				}
 				}
 				
@@ -772,7 +776,7 @@ public class DatabasePrep {
 				session.persist(poke);
 				session.getTransaction().commit();
 				continue;
-			} else if (!(dbSample.toString().equals(poke.toString()))){
+			} else if (dbSample.toString().equals(poke.toString())){
 				System.out.println("There is nothing to do.");
 				continue;
 				} else {
