@@ -22,7 +22,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import hibernate.pokemon.Pokemon;
 
 @SpringBootApplication(scanBasePackages = {"hibernate", "hibernate.ability", "hibernate.move", "hibernate.pokemon"})
-@EnableAutoConfiguration
 
 public class HTMLCrawler {
 	/*

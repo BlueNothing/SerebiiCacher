@@ -1,4 +1,9 @@
-From here...
-Refactor the existing code for Spring support.
+Back-End: Improve SQL structure for database (consider establishing a relationship between moves in the learnset and Pokemon that get them?) and migrate from H2 to a more robust database system (probably PostgreSQL, but setting that up might be a bit tricky)?
+
+Improve data processing for the regional and alternate forms.
+
 
 Allow the user to access the database in a RESTful way, and provide support for moveset collision queries through GET requests.
+
+Front-End:
+Single-Page Application Design (Leave this to Athena for now).
