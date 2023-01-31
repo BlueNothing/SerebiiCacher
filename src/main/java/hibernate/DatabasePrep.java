@@ -397,6 +397,16 @@ public class DatabasePrep {
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().startsWith("Abilities:")) {
+					/*
+					 * Need to add support for alternate form abilities.
+					 * For Regional forms, the sample text looks like this: Abilities: Pickup - Technician - Unnerve (Hidden) (Normal Forme) - Pickup- Technician - Rattled (Hidden) (Alola Form) - Pickup- Tough Claws - Unnerve (Hidden) (Galarian Form)
+					 * 
+					 * For the Genies, the sample text looks like: Abilities: Prankster - Defiant (Hidden) (Incarnate Forme) - Regenerator (Therian Forme)
+					 * 
+					 * For Lycanroc, the sample looks like: Abilities: Keen Eye - Sand Rush - Steadfast (Hidden) (Midday Form) - Keen Eye- Vital Spirit - No Guard (Hidden) (Midnight Form) - Tough Claws (Dusk Form)
+					 * 
+					 * 
+					 */
 					for(int j = 0; j < (dexTableRows.size() - 1); j += 2) {
 						row = dexTableRows.select("tr").get((j + 1));
 						Elements cols = row.select("td");
@@ -411,6 +421,43 @@ public class DatabasePrep {
 						if(!(Objects.isNull(subTitle.text())) && subTitle.text().contains("Abilities:")) {
 							Elements abilityElements = col.select("b");
 							ArrayList<String> abilityList = new ArrayList<String>();
+							System.out.println("Ability Elements Output - ");
+							/*Example for Lycanroc:
+							 * Ability Elements Output - 
+<b>Keen Eye</b>
+<b>Sand Rush</b>
+<b>Hidden Ability</b>
+<b>Steadfast</b>
+<b>Midnight Form Abilities</b>
+<b>Keen Eye</b>
+<b>Vital Spirit</b>
+<b>Hidden Ability</b>
+<b>No Guard</b>
+<b>Dusk Form Abilities</b>
+<b>Tough Claws</b>
+							 */
+							
+							/*
+							 * 2nd example, for Meowth: 
+Ability Elements Output - 
+<b>Pickup</b>
+<b>Technician</b>
+<b>Hidden Ability</b>
+<b>Unnerve</b>
+<b>Alola Form Abilities</b>
+<b>Pickup</b>
+<b>Technician</b>
+<b>Hidden Ability</b>
+<b>Rattled</b>
+<b>Galarian Form Abilities</b>
+<b>Pickup</b>
+<b>Tough Claws</b>
+<b>Hidden Ability</b>
+<b>Unnerve</b>
+							 */
+							for(Element ele : abilityElements) {
+								System.out.println(ele.toString());
+							}
 							boolean hiddenNext = false;
 							for(Element abilityElem : abilityElements) {
 								if(abilityElem.text().equals("Hidden Ability")) {
