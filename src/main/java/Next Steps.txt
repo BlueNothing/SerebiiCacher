@@ -3,7 +3,15 @@ Back-End: Improve SQL structure for database (consider establishing a relationsh
 Improve data processing for the regional and alternate forms.
 
 Regional Forms need support for - 
-Abilities, Types, Base Stats, Cap Rate, Classifications, Type Data, EVs, Movelists (aside from level-up)
+Types, Base Stats, Cap Rate, Type Data, EVs, Movelists (aside from level-up)
+
+Abilities support has improved dramatically, but a few slipped through the cracks:
+Calyrex (and alternates).
+
+Classifications support has improved dramatically, but a few slipped through the cracks:
+Calyrex (and alternates), Meowth (and alternates).
+
+
 
 
 Allow the user to access the database in a RESTful way, and provide support for moveset collision queries through GET requests.

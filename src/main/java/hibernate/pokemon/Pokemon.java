@@ -113,13 +113,16 @@ public class Pokemon {
     @Column(name="bst")
     private Integer bst;
     
+    @Column(name="imgURL")
+    private String imgURL;
+    
     
     
     @Override
 	public int hashCode() {
 		return Objects.hash(abilities, baseAtk, baseDef, baseHP, baseSpAtk, baseSpDef, baseSpd, bst, capRate,
-				classification, eggGroups, eggMoves, eggSteps, evRewardAmt, evRewardAttr, height, immunities,
-				levelMoves, neutrals, otherMoves, name, pokeTypes, resistances, tmMoves, totalMoves, weaknesses,
+				classification, eggGroups, eggMoves, eggSteps, evRewardAmt, evRewardAttr, height, imgURL, immunities,
+				levelMoves, name, neutrals, otherMoves, pokeTypes, resistances, tmMoves, totalMoves, weaknesses,
 				weight);
 	}
 
@@ -132,16 +135,17 @@ public class Pokemon {
 		if (getClass() != obj.getClass())
 			return false;
 		Pokemon other = (Pokemon) obj;
-		return Objects.equals(abilities, other.abilities) && baseAtk == other.baseAtk && baseDef == other.baseDef
-				&& baseHP == other.baseHP && baseSpAtk == other.baseSpAtk && baseSpDef == other.baseSpDef
-				&& baseSpd == other.baseSpd && bst == other.bst
-				&& Double.doubleToLongBits(capRate) == Double.doubleToLongBits(other.capRate)
-				&& Objects.equals(classification, other.classification) && Objects.equals(eggGroups, other.eggGroups)
-				&& Objects.equals(eggMoves, other.eggMoves) && eggSteps == other.eggSteps
-				&& evRewardAmt == other.evRewardAmt && Objects.equals(evRewardAttr, other.evRewardAttr)
-				&& Objects.equals(height, other.height) && Objects.equals(immunities, other.immunities)
-				&& Objects.equals(levelMoves, other.levelMoves) && Objects.equals(neutrals, other.neutrals)
-				&& Objects.equals(otherMoves, other.otherMoves) && Objects.equals(name, other.name)
+		return Objects.equals(abilities, other.abilities) && Objects.equals(baseAtk, other.baseAtk)
+				&& Objects.equals(baseDef, other.baseDef) && Objects.equals(baseHP, other.baseHP)
+				&& Objects.equals(baseSpAtk, other.baseSpAtk) && Objects.equals(baseSpDef, other.baseSpDef)
+				&& Objects.equals(baseSpd, other.baseSpd) && Objects.equals(bst, other.bst)
+				&& Objects.equals(capRate, other.capRate) && Objects.equals(classification, other.classification)
+				&& Objects.equals(eggGroups, other.eggGroups) && Objects.equals(eggMoves, other.eggMoves)
+				&& Objects.equals(eggSteps, other.eggSteps) && Objects.equals(evRewardAmt, other.evRewardAmt)
+				&& Objects.equals(evRewardAttr, other.evRewardAttr) && Objects.equals(height, other.height)
+				&& Objects.equals(imgURL, other.imgURL) && Objects.equals(immunities, other.immunities)
+				&& Objects.equals(levelMoves, other.levelMoves) && Objects.equals(name, other.name)
+				&& Objects.equals(neutrals, other.neutrals) && Objects.equals(otherMoves, other.otherMoves)
 				&& Objects.equals(pokeTypes, other.pokeTypes) && Objects.equals(resistances, other.resistances)
 				&& Objects.equals(tmMoves, other.tmMoves) && Objects.equals(totalMoves, other.totalMoves)
 				&& Objects.equals(weaknesses, other.weaknesses) && Objects.equals(weight, other.weight);
@@ -172,6 +176,7 @@ public class Pokemon {
 		this.baseSpDef = 0;
 		this.baseSpd = 0;
 		this.bst = 0;
+		this.imgURL = null;
     }
     
     public Pokemon(String name) {
@@ -197,6 +202,7 @@ public class Pokemon {
 		this.baseSpDef = 0;
 		this.baseSpd = 0;
 		this.bst = 0;
+		this.imgURL = null;
     }
     
     public Pokemon(Pokemon pokeInput) {
@@ -222,13 +228,14 @@ public class Pokemon {
 		this.baseSpDef = pokeInput.getBaseSpDef();
 		this.baseSpd = pokeInput.getBaseSpd();
 		this.bst = pokeInput.getBst();
+		this.imgURL = pokeInput.imgURL;
     }
 
 	
     public Pokemon(String name, String pokeTypes, String classification, String height, String weight, Double capRate,
 			Integer eggSteps, String abilities, Integer evRewardAmt, String evRewardAttr, String levelMoves, String tmMoves,
 			String otherMoves, String eggMoves, String totalMoves, Integer baseHP, Integer baseAtk, Integer baseDef,
-			Integer baseSpAtk, Integer baseSpDef, Integer baseSpd, Integer bst) {
+			Integer baseSpAtk, Integer baseSpDef, Integer baseSpd, Integer bst, String imgUrl) {
 		super();
 		this.name = name;
 		this.pokeTypes = pokeTypes;
@@ -252,6 +259,7 @@ public class Pokemon {
 		this.baseSpDef = baseSpDef;
 		this.baseSpd = baseSpd;
 		this.bst = bst;
+		this.imgURL = imgUrl;
 	}
 
 	public String getName() {
@@ -470,16 +478,24 @@ public class Pokemon {
 		this.eggGroups = eggGroups;
 	}
 
+	public String getImgURL() {
+		return imgURL;
+	}
+
+	public void setImgURL(String imgURL) {
+		this.imgURL = imgURL;
+	}
+
 	@Override
 	public String toString() {
-		return "Pokemon [name=" + name + ", pokeTypes=" + pokeTypes + ", classification=" + classification
-				+ ", height=" + height + ", weight=" + weight + ", capRate=" + capRate + ", eggSteps=" + eggSteps
-				+ ", abilities=" + abilities + ", evRewardAmt=" + evRewardAmt + ", evRewardAttr=" + evRewardAttr
-				+ ", weaknesses=" + weaknesses + ", neutrals=" + neutrals + ", resistances=" + resistances
-				+ ", immunities=" + immunities + ", eggGroups=" + eggGroups + ", levelMoves=" + levelMoves
-				+ ", tmMoves=" + tmMoves + ", eggMoves=" + eggMoves + ", otherMoves=" + otherMoves + ", totalMoves="
-				+ totalMoves + ", baseHP=" + baseHP + ", baseAtk=" + baseAtk + ", baseDef=" + baseDef + ", baseSpAtk="
-				+ baseSpAtk + ", baseSpDef=" + baseSpDef + ", baseSpd=" + baseSpd + ", bst=" + bst + "]";
+		return "Pokemon [name=" + name + ", pokeTypes=" + pokeTypes + ", classification=" + classification + ", height="
+				+ height + ", weight=" + weight + ", capRate=" + capRate + ", eggSteps=" + eggSteps + ", abilities="
+				+ abilities + ", evRewardAmt=" + evRewardAmt + ", evRewardAttr=" + evRewardAttr + ", weaknesses="
+				+ weaknesses + ", neutrals=" + neutrals + ", resistances=" + resistances + ", immunities=" + immunities
+				+ ", eggGroups=" + eggGroups + ", levelMoves=" + levelMoves + ", tmMoves=" + tmMoves + ", eggMoves="
+				+ eggMoves + ", otherMoves=" + otherMoves + ", totalMoves=" + totalMoves + ", baseHP=" + baseHP
+				+ ", baseAtk=" + baseAtk + ", baseDef=" + baseDef + ", baseSpAtk=" + baseSpAtk + ", baseSpDef="
+				+ baseSpDef + ", baseSpd=" + baseSpd + ", bst=" + bst + ", imgURL=" + imgURL + "]";
 	}
     
 	public static void natDexFinder() throws IOException {

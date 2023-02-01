@@ -160,6 +160,9 @@ public class DatabasePrep {
 		List<String> palDexData = palDexElems.eachText();
 		ArrayList<String> palDexOverall = new ArrayList<String>();
 		List<String> results = new ArrayList<String>();
+		ArrayList<String> debug1 = new ArrayList<String>();
+		ArrayList<String> debug2 = new ArrayList<String>();
+		ArrayList<String> debug3 = new ArrayList<String>();
 		System.out.println("Inital Pokedex data:");
 		/*
 		 */
@@ -219,6 +222,8 @@ public class DatabasePrep {
 			int baseSpAtk = 0;
 			int baseSpDef = 0;
 			int bst = 0;
+			String imgUrl = "serebii.net";
+			
 			String pokeName = localPoke.getName(); //Working on this part to dynamically fill the dex!
 			String urlPokeName = pokeName.toLowerCase().replace("%20", "").replace(" ", "").replace("%C3%A9", "e").replace("é", "e");
 			//urlPokeName = "charmander";
@@ -245,6 +250,22 @@ public class DatabasePrep {
 				Element row = dexTable.selectFirst("tr");
 				Element titleCol = row.selectFirst("td");
 				System.out.println("TITLE COLUMN: " + titleCol.text()); //Useful for debugging.
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Picture")) {
+					row = dexTableRows.select("tr").get(1);
+					Element imgTable = row.selectFirst("td");
+					Element img = imgTable.selectFirst("img");
+					System.out.println(img.toString());
+					System.out.println(img.attributes().toString());
+					if(!img.attr("src").toString().isBlank()) {
+						System.out.println(img.attr("src"));
+						imgUrl = imgUrl + img.attr("src");
+					} else if(!img.attr("id").toString().isBlank()) {
+						System.out.println(img.attr("id").toString());
+						imgUrl = imgUrl + img.attr("id");
+					}
+					localPoke.setImgURL(imgUrl);
+					
+				}
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Name")) {
 					for(int j = 0; j < (dexTableRows.size() - 1); j += 2) {
 						row = dexTableRows.select("tr").get((j + 1));
@@ -364,10 +385,85 @@ public class DatabasePrep {
 							System.out.println("Classification sub-table");
 							col = cols.get(0);
 							String classification = col.text();
+							if(localPoke.getName().contains("Meowth")) {
+								debug1.add(col.text());
+							}
+							if(localPoke.getName().contains("Calyrex")) {
+								debug2.add(col.text());
+							}
+							if(col.text().contains(")")) {
+							ArrayList<String> classifications = new ArrayList<String>();
+							ArrayList<String> regionData = new ArrayList<String>();
+							while(classification.contains(")")) {
+								int endex = classification.indexOf(")");
+								classifications.add(classification.substring(0, classification.indexOf("(")));
+								regionData.add(classification.substring(classification.indexOf("(") + 1, classification.indexOf(")")));
+								if(classification.length() > endex) {
+								classification = classification.substring(endex + 1);
+								} else {
+									classification = "";
+								}
+							}
+							localPoke.setClassification(classifications.get(0));
+							switch(regionData.get(1)) {
+							case "Hisuian":
+								localPokeHisui.setClassification(classifications.get(1));
+								break;
+							
+							case "Alolan":
+								localPokeAlola.setClassification(classifications.get(1));
+								break;
+			
+							case "Galarian":
+								localPokeGalar.setClassification(classifications.get(1));
+								break;
+							
+							case "Paldean":
+								localPokePaldea.setClassification(classifications.get(1));
+								break;
+							
+							default:
+								if(!Objects.isNull(localPokeOther1)) {
+								localPokeOther1.setClassification(classifications.get(1));
+								} else {
+								localPoke.setClassification(col.text());
+								}
+						}
+							//System.out.println("Classifications: " + classifications.toString());
+							//debug2.add(classifications.toString());
+							} 
+							else{
 							System.out.println("Classification: " + classification);
 							localPoke.setClassification(classification);
+							if(!Objects.isNull(localPokeAlola) && localPokeAlola.getClassification() == null) {
+								localPokeAlola.setClassification(classification);
+							}
+							if(!Objects.isNull(localPokeGalar) && localPokeGalar.getClassification() == null) {
+								localPokeGalar.setClassification(classification);
+							}
+							if(!Objects.isNull(localPokeHisui) && localPokeHisui.getClassification() == null) {
+								localPokeHisui.setClassification(classification);
+							}
+							if(!Objects.isNull(localPokePaldea) && localPokePaldea.getClassification() == null) {
+								localPokePaldea.setClassification(classification);
+							}
+							if(!Objects.isNull(localPokeOther1) && localPokeOther1.getClassification() == null) {
+								localPokeOther1.setClassification(classification);
+							}
+							if(!Objects.isNull(localPokeOther2) && localPokeOther2.getClassification() == null) {
+								localPokeOther2.setClassification(classification);
+							}
+							if(!Objects.isNull(localPokeOther3) && localPokeOther3.getClassification() == null) {
+								localPokeOther3.setClassification(classification);
+							}
+							if(!Objects.isNull(localPokeOther4) && localPokeOther4.getClassification() == null) {
+								localPokeOther4.setClassification(classification);
+							}
+							if(!Objects.isNull(localPokeOther5) && localPokeOther5.getClassification() == null) {
+								localPokeOther5.setClassification(classification);
+							}
 							System.out.println("Classification set!");
-							
+							}
 							col = cols.get(1);
 							String height = col.text();
 							height = height.substring(0, (height.indexOf("\"") + 1));
@@ -397,16 +493,6 @@ public class DatabasePrep {
 				}
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().startsWith("Abilities:")) {
-					/*
-					 * Need to add support for alternate form abilities.
-					 * For Regional forms, the sample text looks like this: Abilities: Pickup - Technician - Unnerve (Hidden) (Normal Forme) - Pickup- Technician - Rattled (Hidden) (Alola Form) - Pickup- Tough Claws - Unnerve (Hidden) (Galarian Form)
-					 * 
-					 * For the Genies, the sample text looks like: Abilities: Prankster - Defiant (Hidden) (Incarnate Forme) - Regenerator (Therian Forme)
-					 * 
-					 * For Lycanroc, the sample looks like: Abilities: Keen Eye - Sand Rush - Steadfast (Hidden) (Midday Form) - Keen Eye- Vital Spirit - No Guard (Hidden) (Midnight Form) - Tough Claws (Dusk Form)
-					 * 
-					 * 
-					 */
 					for(int j = 0; j < (dexTableRows.size() - 1); j += 2) {
 						row = dexTableRows.select("tr").get((j + 1));
 						Elements cols = row.select("td");
@@ -421,59 +507,168 @@ public class DatabasePrep {
 						if(!(Objects.isNull(subTitle.text())) && subTitle.text().contains("Abilities:")) {
 							Elements abilityElements = col.select("b");
 							ArrayList<String> abilityList = new ArrayList<String>();
-							System.out.println("Ability Elements Output - ");
-							/*Example for Lycanroc:
-							 * Ability Elements Output - 
-<b>Keen Eye</b>
-<b>Sand Rush</b>
-<b>Hidden Ability</b>
-<b>Steadfast</b>
-<b>Midnight Form Abilities</b>
-<b>Keen Eye</b>
-<b>Vital Spirit</b>
-<b>Hidden Ability</b>
-<b>No Guard</b>
-<b>Dusk Form Abilities</b>
-<b>Tough Claws</b>
-							 */
+							ArrayList<String> abilityListAlola = new ArrayList<String>();
+							ArrayList<String> abilityListGalar = new ArrayList<String>();
+							ArrayList<String> abilityListHisui = new ArrayList<String>();
+							ArrayList<String> abilityListPaldea = new ArrayList<String>();
+							ArrayList<String> abilityListOther1 = new ArrayList<String>();
+							ArrayList<String> abilityListOther2 = new ArrayList<String>();
+							System.out.println("Ability Elements - " + abilityElements.text());
 							
-							/*
-							 * 2nd example, for Meowth: 
-Ability Elements Output - 
-<b>Pickup</b>
-<b>Technician</b>
-<b>Hidden Ability</b>
-<b>Unnerve</b>
-<b>Alola Form Abilities</b>
-<b>Pickup</b>
-<b>Technician</b>
-<b>Hidden Ability</b>
-<b>Rattled</b>
-<b>Galarian Form Abilities</b>
-<b>Pickup</b>
-<b>Tough Claws</b>
-<b>Hidden Ability</b>
-<b>Unnerve</b>
+							/*Example for Lycanroc:
+							 * Raw data: "Abilities: Keen Eye - Sand Rush - Steadfast (Hidden) (Midday Form) - Keen Eye- Vital Spirit - No Guard (Hidden) (Midnight Form) - Tough Claws (Dusk Form)"
+							 * Ability Elements Output - "Ability Elements - Keen Eye Sand Rush Hidden Ability Steadfast Midnight Form Abilities Keen Eye Vital Spirit Hidden Ability No Guard Dusk Form Abilities Tough Claws"
+							As elements: <b>Keen Eye</b> <b>Sand Rush</b> <b>Hidden Ability</b> <b>Steadfast</b> <b>Midnight Form Abilities</b> <b>Keen Eye</b> <b>Vital Spirit</b> <b>Hidden Ability</b> <b>No Guard</b> <b>Dusk Form Abilities</b> <b>Tough Claws</b>
 							 */
-							for(Element ele : abilityElements) {
-								System.out.println(ele.toString());
-							}
+							String form = "Normal";
 							boolean hiddenNext = false;
-							for(Element abilityElem : abilityElements) {
-								if(abilityElem.text().equals("Hidden Ability")) {
+							for(int eleInd = 0; eleInd < abilityElements.size(); eleInd++) {
+								Element ele = abilityElements.get(eleInd);
+								System.out.println(ele.toString());
+								if(ele.text().equals("Alola Form Abilities")) {
+									form = "Alola";
+									continue;
+								}
+								if(ele.text().equals("Galarian Form Abilities")) {
+									form = "Galar";
+									continue;
+								}
+								if(ele.text().equals("Hisuian Form Abilities")) {
+									form = "Hisui";
+									continue;
+								}
+								if(ele.text().equals("Paldean Form Abilities")) {
+									form = "Paldea";
+									continue;
+								}
+								if(!ele.text().equals("Hidden Ability") && (ele.text().equals("Therian Forme Ability") || ele.text().contains("Abilities") || (ele.text().contains("Ability") && !ele.text().equals("Adaptability")))) {
+									form = "Other";
+									continue;
+								}
+								if(form.equals("Other") && ele.text().contains("Abilit")) {
+									debug3.add(localPoke.getName() + " - " + ele.text());
+								}
+								if(form.equals("Normal")) {	
+								if(ele.text().equals("Hidden Ability")) {
 									hiddenNext = true;
 									continue;
 								}
 								else if(!hiddenNext) {
-									abilityList.add(abilityElem.text());
+									abilityList.add(ele.text());
 								} else if(hiddenNext) {
-									abilityList.add("(H) " + abilityElem.text());
+									abilityList.add("(H) " + ele.text());
 									hiddenNext = false;
 								}
+							} else if(form.equals("Alola")) {
+								if(ele.text().equals("Hidden Ability")) {
+									hiddenNext = true;
+									continue;
+								}
+								else if(!hiddenNext) {
+									abilityListAlola.add(ele.text());
+								} else if(hiddenNext) {
+									abilityListAlola.add("(H) " + ele.text());
+									hiddenNext = false;
+								}
+							} else if(form.equals("Galar")) {
+								if(ele.text().equals("Hidden Ability")) {
+									hiddenNext = true;
+									continue;
+								}
+								else if(!hiddenNext) {
+									abilityListGalar.add(ele.text());
+								} else if(hiddenNext) {
+									abilityListGalar.add("(H) " + ele.text());
+									hiddenNext = false;
+								}
+							} else if(form.equals("Hisui")) {
+								if(ele.text().equals("Hidden Ability")) {
+									hiddenNext = true;
+									continue;
+								}
+								else if(!hiddenNext) {
+									abilityListHisui.add(ele.text());
+								} else if(hiddenNext) {
+									abilityListHisui.add("(H) " + ele.text());
+									hiddenNext = false;
+								}
+							} else if(form.equals("Paldea")) {
+								if(ele.text().equals("Hidden Ability")) {
+									hiddenNext = true;
+									continue;
+								}
+								else if(!hiddenNext) {
+									abilityListPaldea.add(ele.text());
+								} else if(hiddenNext) {
+									abilityListPaldea.add("(H) " + ele.text());
+									hiddenNext = false;
+								}
+							} else if(form.equals("Other")) {
+								if(ele.text().equals("Hidden Ability")) {
+									hiddenNext = true;
+									continue;
+								}
+								else if(!hiddenNext) {
+									abilityListOther1.add(ele.text());
+								} else if(hiddenNext) {
+									abilityListOther1.add("(H) " + ele.text());
+									hiddenNext = false;
+								}
+							}
 							}
 							String abilities = abilityList.toString();
 							abilities = abilities.substring(1, abilities.length() - 1); //Remove the brackets.
 							localPoke.setAbilities(abilities);
+							
+							if(abilityListAlola.size() > 0) {
+								abilities = abilityListAlola.toString();
+								abilities = abilities.substring(1, abilities.length() - 1); //Remove the brackets.
+								localPokeAlola.setAbilities(abilities);
+							}
+							if(abilityListGalar.size() > 0) {
+								abilities = abilityListGalar.toString();
+								abilities = abilities.substring(1, abilities.length() - 1); //Remove the brackets.
+								localPokeGalar.setAbilities(abilities);
+							}
+							if(abilityListHisui.size() > 0) {
+								abilities = abilityListHisui.toString();
+								abilities = abilities.substring(1, abilities.length() - 1); //Remove the brackets.
+								localPokeHisui.setAbilities(abilities);
+							}
+							if(abilityListPaldea.size() > 0) {
+								abilities = abilityListPaldea.toString();
+								abilities = abilities.substring(1, abilities.length() - 1); //Remove the brackets.
+								localPokePaldea.setAbilities(abilities);
+							}
+							if(abilityListOther1.size() > 0 && !Objects.isNull(localPokeOther1)) {
+								abilities = abilityListOther1.toString();
+								abilities = abilities.substring(1, abilities.length() - 1); //Remove the brackets.
+								localPokeOther1.setAbilities(abilities);
+							}
+							if(abilityListOther1.size() > 0 && Objects.isNull(localPokeOther1)) {
+								localPokeOther1 = new Pokemon(localPoke);
+								localPokeOther1.setName(localPokeOther1.getName() + " - Ability Variant");
+								abilities = abilityListOther1.toString();
+								abilities = abilities.substring(1, abilities.length() - 1);
+								localPokeOther1.setAbilities(abilities);
+							}
+							if(abilityListOther1.size() == 0 && !Objects.isNull(localPokeOther1)){
+								if(!Objects.isNull(localPokeOther1)) {
+									localPokeOther1.setAbilities(localPoke.getAbilities());
+								}
+								if(!Objects.isNull(localPokeOther2)) {
+									localPokeOther2.setAbilities(localPoke.getAbilities());
+								}
+								if(!Objects.isNull(localPokeOther3)) {
+									localPokeOther3.setAbilities(localPoke.getAbilities());
+								}
+								if(!Objects.isNull(localPokeOther4)) {
+									localPokeOther4.setAbilities(localPoke.getAbilities());
+								}
+								if(!Objects.isNull(localPokeOther5)) {
+									localPokeOther5.setAbilities(localPoke.getAbilities());
+								}
+							}
 						}
 							
 						if(!(Objects.isNull(subTitle.text())) && subTitle.text().equals("Experience Growth")) {
@@ -990,6 +1185,10 @@ Ability Elements Output -
 			}
 			System.out.println(variantPokeList.size() + " distinct variant forms catalogued.");
 			}
+		
+		System.out.println(debug1.toString());
+		System.out.println(debug2.toString());
+		System.out.println(debug3.toString());
 			
 			/*
 			 * How do we want to handle the move lists?
