@@ -25,13 +25,13 @@ public class HomepageController {
 	}
 	
 	@GetMapping(value="loadDB")
-	String initDB() throws IOException {
+	String initDB() throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
 		DatabasePrep.databaseInitializer("");
 		return "Loading databases";
 	}
 	
 	@GetMapping(value="loadDB/{id}")
-	String initDB(@PathVariable("id") String id) throws IOException {
+	String initDB(@PathVariable("id") String id) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
 		DatabasePrep.databaseInitializer(id);
 		return "Loading database for: " + id;
 	}

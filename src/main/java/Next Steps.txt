@@ -1,20 +1,15 @@
-Back-End: Improve SQL structure for database (consider establishing a relationship between moves in the learnset and Pokemon that get them?)?
-
-Improve data processing for the regional and alternate forms.
+Back-End: Improve data processing for the regional and alternate forms.
 
 Regional Forms need support for - 
-Types, Base Stats, Cap Rate, Type Data, EVs, Movelists (aside from level-up)
+Base Stats, Cap Rate, Egg Steps, EVs, Movelists (aside from level-up)
 
 Abilities support has improved dramatically, but a few slipped through the cracks:
-Calyrex (and alternates).
+Ice Rider Calyrex and Shadow Rider Calyrex.
 
 Classifications support has improved dramatically, but a few slipped through the cracks:
 Calyrex (and alternates), Meowth (and alternates).
 
-
-
-
 Allow the user to access the database in a RESTful way, and provide support for moveset collision queries through GET requests.
 
 Front-End:
-Single-Page Application Design (Leave this to Athena for now).
+Single-Page Application Design.

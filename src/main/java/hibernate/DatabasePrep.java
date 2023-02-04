@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import org.hibernate.Session;
 import org.jsoup.Jsoup;
@@ -249,7 +250,7 @@ public class DatabasePrep {
 				Elements dexTableRows = dexTable.select("tr");
 				Element row = dexTable.selectFirst("tr");
 				Element titleCol = row.selectFirst("td");
-				System.out.println("TITLE COLUMN: " + titleCol.text()); //Useful for debugging.
+				//System.out.println("TITLE COLUMN: " + titleCol.text()); //Useful for debugging.
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Picture")) {
 					row = dexTableRows.select("tr").get(1);
 					Element imgTable = row.selectFirst("td");
@@ -257,10 +258,10 @@ public class DatabasePrep {
 					System.out.println(img.toString());
 					System.out.println(img.attributes().toString());
 					if(!img.attr("src").toString().isBlank()) {
-						System.out.println(img.attr("src"));
+						//System.out.println(img.attr("src"));
 						imgUrl = imgUrl + img.attr("src");
 					} else if(!img.attr("id").toString().isBlank()) {
-						System.out.println(img.attr("id").toString());
+						//System.out.println(img.attr("id").toString());
 						imgUrl = imgUrl + img.attr("id");
 					}
 					localPoke.setImgURL(imgUrl);
@@ -280,117 +281,227 @@ public class DatabasePrep {
 						System.out.println("SubTitle: " + subTitle.text());
 						if(j == 0) {
 						Element typeData = cols.select(".cen").get(0);
-						if(!Objects.isNull(typeData)) {
+						Element typeTableFrame = typeData.selectFirst("tbody");
+						if(Objects.isNull(typeTableFrame) && !Objects.isNull(typeData)) {
+							Element typeCol = cols.get(cols.size() - 1);
+							System.out.println("Type Column: " + typeCol.toString());
+							Elements types = typeCol.select("a");
+							String typeList = "";
+							for(Element type : types) {
+								String typeHref = type.attr("href");
+								//System.out.println(typeHref);
+								String storedType = typeHref.substring((typeHref.indexOf("sv/") + 3), typeHref.indexOf(".shtml"));
+								storedType = storedType.substring(0, 1).toUpperCase() + storedType.substring(1) + ", ";
+								typeList += storedType;
+							}
+							typeList = typeList.substring(0, (typeList.length() - 2)); //This may behave erratically for things that have conditional types like Megas or Regional Forms.
+							System.out.println("Type: " + typeList);
+							localPoke.setPokeTypes(typeList);
+						}
+						else if(!Objects.isNull(typeTableFrame) && !Objects.isNull(typeData)) {
 							//System.out.println(typeData.html());
 							System.out.println(typeData.text());
-							if(typeData.text().contains("Normal") || typeData.text().contains("Style") || typeData.text().contains("Hoopa") || typeData.text().contains("Calyrex") || typeData.text().contains("Form") || typeData.text().contains("Crowned") || typeData.text().contains("Rotom")) {
-								Elements typeTable = typeData.select("tr");
-								for(Element typeSet : typeTable) {
-									Element typeCol = cols.get(cols.size() - 1);
-									System.out.println("Type Column: " + typeCol.toString());
-									Elements types = typeCol.select("a");
-						String typeList = "";
-						for(Element type : types) {
-							String typeHref = type.attr("href");
-							//System.out.println(typeHref);
-							String storedType = typeHref.substring((typeHref.indexOf("sv/") + 3), typeHref.indexOf(".shtml"));
-							storedType = storedType.substring(0, 1).toUpperCase() + storedType.substring(1) + ", ";
-							typeList += storedType;
-						}
-						typeList = typeList.substring(0, (typeList.length() - 2)); //This may behave erratically for things that have conditional types like Megas or Regional Forms.
-						System.out.println("Type: " + typeList);
-						localPoke.setPokeTypes(typeList);
-									System.out.println(types.text());
+							Elements typeTable = typeTableFrame.select("tr");
+							ArrayList<String> descriptors = new ArrayList<String>();
+							ArrayList<String> typeSets = new ArrayList<String>();
+							for(Element typeSet : typeTable) {
+								String descriptor = typeSet.select("td").get(0).text();
+								descriptors.add(descriptor);
+								System.out.println("Descriptor: " + descriptor);
+								Element typeCol = typeSet.select("td").get(1);
+								System.out.println("Type Column: " + typeCol.toString());
+								Elements types = typeCol.select("a");
+								System.out.println("Type text: " + types.text());
+								System.out.println("Type String: " + types.toString());
+								String typeList = "";
+								for(Element type : types) {
+									String typeHref = type.attr("href");
+									//System.out.println(typeHref);
+									String storedType = typeHref.substring((typeHref.indexOf("sv/") + 3), typeHref.indexOf(".shtml"));
+									storedType = storedType.substring(0, 1).toUpperCase() + storedType.substring(1) + ", ";
+									typeList += storedType;
+								}
+								typeList = typeList.substring(0, (typeList.length() - 2)); //This may behave erratically for things that have conditional types like Megas or Regional Forms.
+								System.out.println("Type: " + typeList);
+								typeSets.add(typeList);
+								System.out.println("Base Form Type: " + typeSets.get(0));
+								for(int z = 0; z < typeSets.size(); z++) {
+										String check = descriptors.get(z);
+										switch(check) {
+										case "Normal":
+											localPoke.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Paldean":
+											localPokePaldea = new Pokemon(localPoke.getName());
+											localPokePaldea.setName("Paldean " + localPokePaldea.getName());
+											System.out.println(localPokePaldea.getName());
+											localPokePaldea.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Blaze Breed":
+											localPokeOther1 = new Pokemon(localPokePaldea.getName() + " - Blaze Breed");
+											localPokeOther1.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Aqua Breed":
+											localPokeOther2 = new Pokemon(localPokePaldea.getName() + " - Aqua Breed");
+											localPokeOther2.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Hisuian":
+											localPokeHisui = new Pokemon(localPoke.getName());
+											localPokeHisui.setName("Hisuian " + localPokeHisui.getName());
+											System.out.println(localPokeHisui.getName());
+											localPokeHisui.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Galarian":
+											localPokeGalar = new Pokemon(localPoke.getName());
+											localPokeGalar.setName("Galarian " + localPokeGalar.getName());
+											System.out.println(localPokeGalar.getName());
+											localPokeGalar.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Alolan":
+											localPokeAlola = new Pokemon(localPoke.getName());
+											localPokeAlola.setName("Alolan " + localPokeAlola.getName());
+											System.out.println(localPokeAlola.getName());
+											localPokeAlola.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Baile Style":
+											localPoke.setName("Oricorio - Baile Style");
+											localPoke.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Pom-Pom Style":
+											localPokeOther1 = new Pokemon("Oricorio - Pom-Pom Style");
+											localPokeOther1.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Pa'u Style":
+											localPokeOther2 = new Pokemon("Oricorio - Pa'u Style");
+											localPokeOther2.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Sensu Style":
+											localPokeOther3 = new Pokemon("Oricorio - Sensu Style");
+											localPokeOther3.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Hoopa Confined":
+											localPoke.setName("Hoopa Confined");
+											localPoke.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Hoopa Unbound":
+											localPokeOther1 = new Pokemon("Hoopa Unbound");
+											localPokeOther1.setPokeTypes(typeSets.get(z));
+											
+										case "Calyrex":
+											localPoke.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Ice Rider":
+											localPokeOther1 = new Pokemon(localPoke.getName() + " - Ice Rider");
+											localPokeOther1.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Shadow Rider":
+											localPokeOther2 = new Pokemon(localPoke.getName() + " - Shadow Rider");
+											localPokeOther2.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Hero of Many Battles":
+											localPoke.setName(localPoke.getName());
+											localPoke.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Crowned Sword":
+											localPokeOther1 = new Pokemon(localPoke.getName() + " - Crowned Sword");
+											localPokeOther1.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Crowned Shield":
+											localPokeOther1 = new Pokemon(localPoke.getName() + " - Crowned Shield");
+											localPokeOther1.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Single Strike Style":
+											localPoke.setName(localPoke.getName() + " - Single Strike Style");
+											localPoke.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Rapid Strike Style":
+											localPokeOther1 = new Pokemon("Urshifu - Rapid Strike Style");
+											localPokeOther1.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Aria Forme":
+											localPoke.setName(localPoke.getName() + " - " + descriptors.get(z));
+											localPoke.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Pirouette Forme":
+											localPokeOther1 = new Pokemon("Meloetta - Pirouette Forme");
+											localPokeOther1.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Rotom":
+											localPoke.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Frost Rotom":
+											localPokeOther1 = new Pokemon(localPoke.getName() + " - " + "Frost");
+											localPokeOther1.setPokeTypes(typeSets.get(z));
+											break;
+										
+										case "Heat Rotom":
+											localPokeOther2 = new Pokemon(localPoke.getName() + " - " + "Heat");
+											localPokeOther2.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Mow Rotom":
+											localPokeOther3 = new Pokemon(localPoke.getName() + " - " + "Mow");
+											localPokeOther3.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Fan Rotom":
+											localPokeOther4 = new Pokemon(localPoke.getName() + " - " + "Fan");
+											localPokeOther4.setPokeTypes(typeSets.get(z));
+											break;
+											
+										case "Wash Rotom":
+											localPokeOther5 = new Pokemon(localPoke.getName() + " - " + "Wash");
+											localPokeOther5.setPokeTypes(typeSets.get(z));
+											break;
+											
+										default:
+											debug1.add(localPoke.getName());
+										}
+										}
+								}
 								}
 								
-								if(typeData.text().contains("Paldean")) {
-									localPokePaldea = new Pokemon(localPoke.getName());
-									localPokePaldea.setName("Paldean " + localPokePaldea.getName());
-									System.out.println(localPokePaldea.getName());
-									if(localPoke.getName().equals("Tauros")) {
-										localPokeOther1 = new Pokemon(localPokePaldea.getName() + " - Blaze Breed");
-										localPokeOther2 = new Pokemon(localPokePaldea.getName() + " - Aqua Breed");
-										System.out.println(localPokeOther1.getName());
-										System.out.println(localPokeOther2.getName());
-									}
-								}
-								if(typeData.text().contains("Hisuian")) {
-									localPokeHisui = new Pokemon(localPoke.getName());
-									localPokeHisui.setName("Hisuian " + localPokeHisui.getName());
-									System.out.println(localPokeHisui.getName());
-								}
-								if(typeData.text().contains("Galarian")) {
-									localPokeGalar = new Pokemon(localPoke.getName());
-									localPokeGalar.setName("Galarian " + localPokeGalar.getName());
-									System.out.println(localPokeGalar.getName());
-								}
-								if(typeData.text().contains("Alolan")) {
-									localPokeAlola = new Pokemon(localPoke.getName());
-									localPokeAlola.setName("Alolan " + localPokeAlola.getName());
-									System.out.println(localPokeAlola.getName());
-								} 
-								else if(typeData.text().contains("Sensu")) { //Oricorio's forms
-									localPoke.setName("Oricorio - Baile Style");
-									localPokeOther1 = new Pokemon("Oricorio - Pom-Pom Style");
-									localPokeOther2 = new Pokemon("Oricorio - Pa'u Style");
-									localPokeOther3 = new Pokemon("Oricorio - Sensu Style");
-								}
-								else if(typeData.text().contains("Hoopa")) { //Hoopa's 2 forms
-									localPoke.setName("Hoopa Confined");
-									localPokeOther1 = new Pokemon("Hoopa Unbound");
-								}
-								else if(typeData.text().contains("Calyrex")){ //Calyrex and 2 forms
-									localPokeOther1 = new Pokemon(localPoke.getName() + " - Ice Rider");
-									localPokeOther2 = new Pokemon(localPoke.getName() + " - Shadow Rider");
-								}
-								else if(typeData.text().contains("Crowned")) { //Zacian and Zamazenta
-									localPokeOther1 = new Pokemon(localPoke.getName() + " - Crowned Form");
-									localPoke.setName(localPoke.getName() + " - Hero of Many Battles");
-								}
-								else if(typeData.text().contains("Style")){ //Urshifu
-									localPoke.setName("Urshifu - Single Strike Style");
-									localPokeOther1 = new Pokemon("Urshifu - Rapid Strike Style");
-								}
-								else if(typeData.text().contains("Aria Forme")) {
-									localPoke.setName("Meloetta - Aria Forme");
-									localPokeOther1 = new Pokemon("Meloetta - Pirouette Forme");
-									
-								}
-								else if(typeData.text().contains("Rotom")) {
-									localPokeOther1 = new Pokemon("Rotom - Frost");
-									localPokeOther2 = new Pokemon("Rotom - Heat");
-									localPokeOther3 = new Pokemon("Rotom - Mow");
-									localPokeOther4 = new Pokemon("Rotom - Fan");
-									localPokeOther5 = new Pokemon("Rotom - Wash");
-								}
-							} else {
-						Element typeCol = cols.get(cols.size() - 1);
-						System.out.println("Type Column: " + typeCol.toString());
-						Elements types = typeCol.select("a");
-						String typeList = "";
-						for(Element type : types) {
-							String typeHref = type.attr("href");
-							//System.out.println(typeHref);
-							String storedType = typeHref.substring((typeHref.indexOf("sv/") + 3), typeHref.indexOf(".shtml"));
-							storedType = storedType.substring(0, 1).toUpperCase() + storedType.substring(1) + ", ";
-							typeList += storedType;
 						}
-						typeList = typeList.substring(0, (typeList.length() - 2)); //This may behave erratically for things that have conditional types like Megas or Regional Forms.
-						System.out.println("Type: " + typeList);
-						localPoke.setPokeTypes(typeList);
-						}
-						}
-						}
-							if(subTitle.text().contains("Classification") ) {
+						
+						if((localPoke.getName().contains("Meowth") || localPoke.getName().contains("Calyrex")) && false) { //Haven't figured out how to select for these cases just yet.
+							debug1.add("Found Meowth Classification table.");
 							System.out.println("Classification sub-table");
 							col = cols.get(0);
 							String classification = col.text();
 							if(localPoke.getName().contains("Meowth")) {
-								debug1.add(col.text());
+								debug1.add(cols.text());
 							}
 							if(localPoke.getName().contains("Calyrex")) {
-								debug2.add(col.text());
+								debug2.add(cols.text());
 							}
+						}
+						else if(subTitle.text().contains("Classification") ) {
+							System.out.println("Classification sub-table");
+							col = cols.get(0);
+							String classification = col.text();
 							if(col.text().contains(")")) {
 							ArrayList<String> classifications = new ArrayList<String>();
 							ArrayList<String> regionData = new ArrayList<String>();
@@ -765,6 +876,73 @@ public class DatabasePrep {
 					localPoke.setNeutrals(neutrals);
 				}
 				
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().contains("Damage Taken")) {
+					System.out.println("ALTERNATE WEAKNESS TABLE");
+					Element typeRow = dexTableRows.select("tr").get((1));
+					Elements typeCols = typeRow.select("td");
+					Element weakRow = dexTableRows.select("tr").get(2);
+					Elements weakCols = weakRow.select("td");
+					String weaknesses = "";
+					String neutrals = "";
+					String immunities = "";
+					String resistances = "";
+						
+					for (int k = 0; k < typeCols.size(); k++) {
+						String rawType = typeCols.get(k).select("a").attr("href");
+						String typeName = rawType.substring(rawType.indexOf("sv/") + 3, rawType.indexOf(".shtml"));
+						typeName = typeName.substring(0, 1).toUpperCase() + typeName.substring(1);
+						if(typeName.equals("Psychict")) {
+							typeName = "Psychic";
+						}
+						String weakLine = weakCols.get(k).text().substring(1);
+						if(weakLine.equals("2") || weakLine.equals("4")){
+							weaknesses += typeName + ", ";
+						}
+						if(weakLine.equals("0.5") || weakLine.equals("0.25")) {
+							resistances += typeName + ", ";
+						}
+						if(weakLine.equals("0")) {
+							immunities += typeName + ", ";
+						}
+						if(weakLine.equals("1")) {
+							neutrals += typeName + ", ";
+						}
+						System.out.println(typeName + ": " + weakCols.get(k).text().substring(1));
+					}
+					if(weaknesses.length() > 0) {
+					weaknesses = weaknesses.substring(0, (weaknesses.length() - 2));
+					} else {
+						weaknesses = "None";
+					}
+					if(resistances.length() > 0) {
+					resistances = resistances.substring(0, (resistances.length() - 2));
+					} else {
+						resistances = "None";
+					}
+					if(immunities.length() > 0) {
+					immunities = immunities.substring(0, (immunities.length() - 2));
+					} else {
+						immunities = "None";
+					}
+					if(neutrals.length() > 0) {
+					neutrals = neutrals.substring(0, (neutrals.length() - 2));
+					} else {
+						neutrals = "None";
+					}
+					debug1.add(localPoke.getName());
+					System.out.println("Weaknesses: " + weaknesses);
+					System.out.println("Resistances: " + resistances);
+					System.out.println("Immunities: " + immunities);
+					System.out.println("Neutral Types: " + neutrals);
+					String subspecies = titleCol.text();
+					subspecies = subspecies.substring(subspecies.indexOf("Damage Taken ") + 13);
+					debug2.add(subspecies);
+					//localPoke.setWeaknesses(weaknesses);
+					//localPoke.setResistances(resistances);
+					//localPoke.setImmunities(immunities);
+					//localPoke.setNeutrals(neutrals);
+				}
+				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().equals("Wild Hold Item")) {
 					System.out.println("Wild Hold Item Table");
 					row = dexTableRows.select("tr").get(1);
@@ -787,6 +965,7 @@ public class DatabasePrep {
 					}
 					eggGroupString = eggGroupString.substring(0, (eggGroupString.length() - 2));
 					localPoke.setEggGroups(eggGroupString);
+					
 					System.out.println("Egg Groups: " + eggGroupString);
 				}
 				
@@ -1122,38 +1301,92 @@ public class DatabasePrep {
 			*/
 			localPokeList.add(localPoke);
 			if(!Objects.isNull(localPokeAlola)) {
+				if(Objects.isNull(localPokeAlola.getEggGroups())) {
+					localPokeAlola.setEggGroups(localPoke.getEggGroups());
+				}
+				if(localPokeAlola.getCapRate() != localPoke.getCapRate()) {
+					localPokeAlola.setCapRate(localPoke.getCapRate());
+				}
 			localPokeList.add(localPokeAlola);
 			variantPokeList.add(localPokeAlola);
 			}
 			if(!Objects.isNull(localPokeGalar)) {
+				if(Objects.isNull(localPokeGalar.getEggGroups())){
+					localPokeGalar.setEggGroups(localPoke.getEggGroups());
+				}
+				if(localPokeGalar.getCapRate() != localPoke.getCapRate()) {
+					localPokeGalar.setCapRate(localPoke.getCapRate());
+				}
 				localPokeList.add(localPokeGalar);
 				variantPokeList.add(localPokeGalar);
 				}
 			if(!Objects.isNull(localPokeHisui)) {
+				if(Objects.isNull(localPokeHisui.getEggGroups())) {
+					localPokeHisui.setEggGroups(localPoke.getEggGroups());
+				}
+				if(localPokeHisui.getCapRate() != localPoke.getCapRate()) {
+					localPokeHisui.setCapRate(localPoke.getCapRate());
+				}
 				localPokeList.add(localPokeHisui);
 				variantPokeList.add(localPokeHisui);
 				}
 			if(!Objects.isNull(localPokePaldea)) {
+				if(Objects.isNull(localPokePaldea.getEggGroups())) {
+					localPokePaldea.setEggGroups(localPoke.getEggGroups());
+				}
+				if(localPokePaldea.getCapRate() != localPoke.getCapRate()) {
+					localPokePaldea.setCapRate(localPoke.getCapRate());
+				}
 				localPokeList.add(localPokePaldea);
 				variantPokeList.add(localPokePaldea);
 				}
 			if(!Objects.isNull(localPokeOther1)) {
+				if(Objects.isNull(localPokeOther1.getEggGroups())) {
+					localPokeOther1.setEggGroups(localPoke.getEggGroups());
+				}
+				if(localPokeOther1.getCapRate() != localPoke.getCapRate()) {
+					localPokeOther1.setCapRate(localPoke.getCapRate());
+				}
 				localPokeList.add(localPokeOther1);
 				variantPokeList.add(localPokeOther1);
 				}
 			if(!Objects.isNull(localPokeOther2)) {
+				if(Objects.isNull(localPokeOther2.getEggGroups())) {
+					localPokeOther2.setEggGroups(localPoke.getEggGroups());
+				}
+				if(localPokeOther2.getCapRate() != localPoke.getCapRate()) {
+					localPokeOther2.setCapRate(localPoke.getCapRate());
+				}
 				localPokeList.add(localPokeOther2);
 				variantPokeList.add(localPokeOther2);
 				}
 			if(!Objects.isNull(localPokeOther3)) {
+				if(Objects.isNull(localPokeOther3.getEggGroups())) {
+					localPokeOther3.setEggGroups(localPoke.getEggGroups());
+				}
+				if(localPokeOther3.getCapRate() != localPoke.getCapRate()) {
+					localPokeOther3.setCapRate(localPoke.getCapRate());
+				}
 				localPokeList.add(localPokeOther3);
 				variantPokeList.add(localPokeOther3);
 				}
 			if(!Objects.isNull(localPokeOther4)) {
+				if(Objects.isNull(localPokeOther4.getEggGroups())) {
+					localPokeOther4.setEggGroups(localPoke.getEggGroups());
+				}
+				if(localPokeOther4.getCapRate() != localPoke.getCapRate()) {
+					localPokeOther4.setCapRate(localPoke.getCapRate());
+				}
 				localPokeList.add(localPokeOther4);
 				variantPokeList.add(localPokeOther4);
 				}
 			if(!Objects.isNull(localPokeOther5)) {
+				if(Objects.isNull(localPokeOther5.getEggGroups())) {
+					localPokeOther5.setEggGroups(localPoke.getEggGroups());
+				}
+				if(localPokeOther5.getCapRate() != localPoke.getCapRate()) {
+					localPokeOther5.setCapRate(localPoke.getCapRate());
+				}
 				localPokeList.add(localPokeOther5);
 				variantPokeList.add(localPokeOther5);
 				}
