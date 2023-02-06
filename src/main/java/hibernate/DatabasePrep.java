@@ -656,9 +656,7 @@ public class DatabasePrep {
 									form = "Other";
 									continue;
 								}
-								if(form.equals("Other") && ele.text().contains("Abilit")) {
-									debug3.add(localPoke.getName() + " - " + ele.text());
-								}
+								
 								if(form.equals("Normal")) {	
 								if(ele.text().equals("Hidden Ability")) {
 									hiddenNext = true;
@@ -795,11 +793,39 @@ public class DatabasePrep {
 							} else {
 								if(pokeName.equals("Indeedee")) {
 									localPoke.setEvRewardAmt(2);
-									localPoke.setEvRewardAttr("Sp. Attack [M]; Sp. Defense [F]");
+									localPokeOther1.setEvRewardAmt(2);
+									localPoke.setEvRewardAttr("Sp. Attack [M]");
+									localPokeOther1.setEvRewardAttr("Sp. Defense [F]");
 									continue;
 								}
 								if(evString.contains("Alolan") || evString.contains("Galarian") || evString.contains("Hisuian") || evString.contains("Paldean")) {
-									System.out.println("SPECIAL CASE");
+									localPoke.setEvRewardAmt(Integer.parseInt(Character.toString(evString.charAt(0))));
+									localPoke.setEvRewardAttr(evString.substring(2, evString.indexOf(" ", 2)));
+									if(evString.indexOf("Alola") != -1) {
+										System.out.println((evString.charAt(evString.indexOf("Alola") + 11)));
+										debug3.add("Alola - " + localPoke.getName() + " - " + evString.substring(evString.indexOf("Alola") + 11));
+										String substring = evString.substring(evString.indexOf("Alola") + 11);
+										localPokeAlola.setEvRewardAmt(Integer.parseInt(Character.toString((substring.charAt(0)))));
+										localPokeAlola.setEvRewardAttr(substring.substring(2, substring.indexOf(" ", 2)));
+										if(substring.substring(2, substring.indexOf(" ", 2)).equals("Sp.")) {
+											String evRewAttr = "Sp. " + substring.substring(6, substring.indexOf(" ", 6));
+										}
+										//localPokeAlola.setEvRewardAttr(evString);
+									}
+									if(evString.indexOf("Galarian") != -1) {
+										System.out.println((evString.charAt(evString.indexOf("Galarian") + 14)));
+										debug3.add("Galar - " + localPoke.getName() + " - " + (evString.substring(evString.indexOf("Galarian") + 14)));
+										String substring = evString.substring(evString.indexOf("Galarian") + 14);
+										localPokeGalar.setEvRewardAmt(Integer.parseInt(Character.toString((substring.charAt(0)))));
+										localPokeGalar.setEvRewardAttr(substring.substring(2, substring.indexOf(" ", 2)));
+										if(substring.substring(2, substring.indexOf(" ", 2)).equals("Sp.")) {
+											String evRewAttr = "Sp. " + substring.substring(6, substring.indexOf(" ", 6));
+											debug3.add(localPoke.getName() + " - " + evRewAttr);
+										}
+									}
+									//debug2.add(localPoke.getName()); Meowth, Slowpoke, Slowbro, Articuno, Zapdos, Moltres, Slowking
+									//System.out.println("SPECIAL CASE");
+									continue;
 								}
 							evAmt = Integer.parseInt(String.valueOf(evString.charAt(0)));
 							System.out.println(evString);
@@ -878,6 +904,7 @@ public class DatabasePrep {
 				
 				if(!(Objects.isNull(titleCol.text())) && titleCol.text().contains("Damage Taken")) {
 					System.out.println("ALTERNATE WEAKNESS TABLE");
+					debug2.add(localPoke.getName());
 					Element typeRow = dexTableRows.select("tr").get((1));
 					Elements typeCols = typeRow.select("td");
 					Element weakRow = dexTableRows.select("tr").get(2);
@@ -1260,6 +1287,172 @@ public class DatabasePrep {
 					localPoke.setBaseSpDef(baseSpDef);
 					localPoke.setBaseSpd(baseSpd);
 					localPoke.setBst(bst);
+					
+					if(localPoke.getName().contains("Oricorio")) {
+						localPokeOther1.setBaseHP(baseHP);
+						localPokeOther1.setBaseAtk(baseAtk);
+						localPokeOther1.setBaseDef(baseDef);
+						localPokeOther1.setBaseSpAtk(baseSpAtk);
+						localPokeOther1.setBaseSpDef(baseSpDef);
+						localPokeOther1.setBaseSpd(baseSpd);
+						localPokeOther1.setBst(bst);
+						
+						localPokeOther2.setBaseHP(baseHP);
+						localPokeOther2.setBaseAtk(baseAtk);
+						localPokeOther2.setBaseDef(baseDef);
+						localPokeOther2.setBaseSpAtk(baseSpAtk);
+						localPokeOther2.setBaseSpDef(baseSpDef);
+						localPokeOther2.setBaseSpd(baseSpd);
+						localPokeOther2.setBst(bst);
+						
+						localPokeOther3.setBaseHP(baseHP);
+						localPokeOther3.setBaseAtk(baseAtk);
+						localPokeOther3.setBaseDef(baseDef);
+						localPokeOther3.setBaseSpAtk(baseSpAtk);
+						localPokeOther3.setBaseSpDef(baseSpDef);
+						localPokeOther3.setBaseSpd(baseSpd);
+						localPokeOther3.setBst(bst);
+					}
+					if(localPoke.getName().contains("Greninja")) {
+						localPokeOther1.setBaseHP(baseHP);
+						localPokeOther1.setBaseAtk(baseAtk);
+						localPokeOther1.setBaseDef(baseDef);
+						localPokeOther1.setBaseSpAtk(baseSpAtk);
+						localPokeOther1.setBaseSpDef(baseSpDef);
+						localPokeOther1.setBaseSpd(baseSpd);
+						localPokeOther1.setBst(bst);
+					}
+				
+				}
+				
+				if(!(Objects.isNull(titleCol.text())) && titleCol.text().contains("Stats") && !titleCol.text().equals("Stats")) {
+					
+					row = dexTable.select("tr").get(2);
+					baseHP = Integer.parseInt(row.select("td").get(1).text());
+					baseAtk = Integer.parseInt(row.select("td").get(2).text());
+					baseDef = Integer.parseInt(row.select("td").get(3).text());
+					baseSpAtk = Integer.parseInt(row.select("td").get(4).text());
+					baseSpDef = Integer.parseInt(row.select("td").get(5).text());
+					baseSpd = Integer.parseInt(row.select("td").get(6).text());
+					bst = baseHP + baseAtk + baseDef + baseSpAtk + baseSpDef + baseSpd;
+					if(titleCol.text().indexOf("Alolan") != -1) {
+						localPokeAlola.setBaseHP(baseHP);
+						localPokeAlola.setBaseAtk(baseAtk);
+						localPokeAlola.setBaseDef(baseDef);
+						localPokeAlola.setBaseSpAtk(baseSpAtk);
+						localPokeAlola.setBaseSpDef(baseSpDef);
+						localPokeAlola.setBaseSpd(baseSpd);
+						localPokeAlola.setBst(bst);
+					} else if(titleCol.text().indexOf("Galarian") != -1) {
+						localPokeGalar.setBaseHP(baseHP);
+						localPokeGalar.setBaseAtk(baseAtk);
+						localPokeGalar.setBaseDef(baseDef);
+						localPokeGalar.setBaseSpAtk(baseSpAtk);
+						localPokeGalar.setBaseSpDef(baseSpDef);
+						localPokeGalar.setBaseSpd(baseSpd);
+						localPokeGalar.setBst(bst);
+					} else if(titleCol.text().indexOf("Hisuian") != -1) {
+						localPokeHisui.setBaseHP(baseHP);
+						localPokeHisui.setBaseAtk(baseAtk);
+						localPokeHisui.setBaseDef(baseDef);
+						localPokeHisui.setBaseSpAtk(baseSpAtk);
+						localPokeHisui.setBaseSpDef(baseSpDef);
+						localPokeHisui.setBaseSpd(baseSpd);
+						localPokeHisui.setBst(bst);
+					} else if(titleCol.text().indexOf("Paldean") != -1) {
+						localPokePaldea.setBaseHP(baseHP);
+						localPokePaldea.setBaseAtk(baseAtk);
+						localPokePaldea.setBaseDef(baseDef);
+						localPokePaldea.setBaseSpAtk(baseSpAtk);
+						localPokePaldea.setBaseSpDef(baseSpDef);
+						localPokePaldea.setBaseSpd(baseSpd);
+						localPokePaldea.setBst(bst);
+						
+						if(!Objects.isNull(localPokeOther1)) {
+							localPokeOther1.setBaseHP(baseHP);
+							localPokeOther1.setBaseAtk(baseAtk);
+							localPokeOther1.setBaseDef(baseDef);
+							localPokeOther1.setBaseSpAtk(baseSpAtk);
+							localPokeOther1.setBaseSpDef(baseSpDef);
+							localPokeOther1.setBaseSpd(baseSpd);
+							localPokeOther1.setBst(bst);
+					}
+						if(!Objects.isNull(localPokeOther2)) {
+							localPokeOther2.setBaseHP(baseHP);
+							localPokeOther2.setBaseAtk(baseAtk);
+							localPokeOther2.setBaseDef(baseDef);
+							localPokeOther2.setBaseSpAtk(baseSpAtk);
+							localPokeOther2.setBaseSpDef(baseSpDef);
+							localPokeOther2.setBaseSpd(baseSpd);
+							localPokeOther2.setBst(bst);
+					}
+					} else if(titleCol.text().indexOf("Alternate Forms") != -1) {
+						localPokeOther1.setBaseHP(baseHP);
+						localPokeOther1.setBaseAtk(baseAtk);
+						localPokeOther1.setBaseDef(baseDef);
+						localPokeOther1.setBaseSpAtk(baseSpAtk);
+						localPokeOther1.setBaseSpDef(baseSpDef);
+						localPokeOther1.setBaseSpd(baseSpd);
+						localPokeOther1.setBst(bst);
+						
+						localPokeOther2.setBaseHP(baseHP);
+						localPokeOther2.setBaseAtk(baseAtk);
+						localPokeOther2.setBaseDef(baseDef);
+						localPokeOther2.setBaseSpAtk(baseSpAtk);
+						localPokeOther2.setBaseSpDef(baseSpDef);
+						localPokeOther2.setBaseSpd(baseSpd);
+						localPokeOther2.setBst(bst);
+						
+						localPokeOther3.setBaseHP(baseHP);
+						localPokeOther3.setBaseAtk(baseAtk);
+						localPokeOther3.setBaseDef(baseDef);
+						localPokeOther3.setBaseSpAtk(baseSpAtk);
+						localPokeOther3.setBaseSpDef(baseSpDef);
+						localPokeOther3.setBaseSpd(baseSpd);
+						localPokeOther3.setBst(bst);
+						
+						localPokeOther4.setBaseHP(baseHP);
+						localPokeOther4.setBaseAtk(baseAtk);
+						localPokeOther4.setBaseDef(baseDef);
+						localPokeOther4.setBaseSpAtk(baseSpAtk);
+						localPokeOther4.setBaseSpDef(baseSpDef);
+						localPokeOther4.setBaseSpd(baseSpd);
+						localPokeOther4.setBst(bst);
+						
+						localPokeOther5.setBaseHP(baseHP);
+						localPokeOther5.setBaseAtk(baseAtk);
+						localPokeOther5.setBaseDef(baseDef);
+						localPokeOther5.setBaseSpAtk(baseSpAtk);
+						localPokeOther5.setBaseSpDef(baseSpDef);
+						localPokeOther5.setBaseSpd(baseSpd);
+						localPokeOther5.setBst(bst);
+					} else if(titleCol.text().indexOf("Origin Forme") != -1) {
+						if(Objects.isNull(localPokeOther1)) {
+							localPokeOther1 = new Pokemon(localPoke);
+					}
+						localPokeOther1.setBaseHP(baseHP);
+						localPokeOther1.setBaseAtk(baseAtk);
+						localPokeOther1.setBaseDef(baseDef);
+						localPokeOther1.setBaseSpAtk(baseSpAtk);
+						localPokeOther1.setBaseSpDef(baseSpDef);
+						localPokeOther1.setBaseSpd(baseSpd);
+						localPokeOther1.setBst(bst);
+					}
+					else if(titleCol.text().indexOf("Therian Forme") != -1) {
+						if(Objects.isNull(localPokeOther1)) {
+							localPokeOther1 = new Pokemon(localPoke);
+					}
+						localPokeOther1.setBaseHP(baseHP);
+						localPokeOther1.setBaseAtk(baseAtk);
+						localPokeOther1.setBaseDef(baseDef);
+						localPokeOther1.setBaseSpAtk(baseSpAtk);
+						localPokeOther1.setBaseSpDef(baseSpDef);
+						localPokeOther1.setBaseSpd(baseSpd);
+						localPokeOther1.setBst(bst);
+					}
+					else {
+					debug1.add(localPoke.getName() + " - " + titleCol.text());
+					}
 				
 				}
 			}
@@ -1286,27 +1479,33 @@ public class DatabasePrep {
 				localPoke.setTotalMoves(overallMoveset.toString().trim());
 			//localPoke.setotherMoves(otherMoves);
 				System.out.println(localPoke.getTotalMoves());
-			/*
-			Pokemon dbSample = session.get(Pokemon.class, poke.getPokeName());
-			 
-			if (!(Objects.isNull(dbSample)) && dbSample.getPokeName().equals(poke.getPokeName()) && dbSample.equals(poke)) {
-				System.out.println("Nothing to do here.");
-				continue;
-				}
-			*/
-			/*
-			session.beginTransaction();
-			session.merge(localPoke);
-			session.getTransaction().commit();
-			*/
+	
+				
+				
 			localPokeList.add(localPoke);
 			if(!Objects.isNull(localPokeAlola)) {
 				if(Objects.isNull(localPokeAlola.getEggGroups())) {
 					localPokeAlola.setEggGroups(localPoke.getEggGroups());
 				}
+				if(localPokeAlola.getEggSteps() == 0) {
+					localPokeAlola.setEggSteps(localPoke.getEggSteps());
+				}
 				if(localPokeAlola.getCapRate() != localPoke.getCapRate()) {
 					localPokeAlola.setCapRate(localPoke.getCapRate());
 				}
+				if(localPokeAlola.getEvRewardAmt() == 0) {
+					localPokeAlola.setEvRewardAmt(localPoke.getEvRewardAmt());
+				}
+				if(Objects.isNull(localPokeAlola.getEvRewardAttr())) {
+					localPokeAlola.setEvRewardAttr(localPoke.getEvRewardAttr());
+				}
+				if(Objects.isNull(localPokeAlola.getHeight())) {
+					localPokeAlola.setHeight(localPoke.getHeight());
+				}
+				if(Objects.isNull(localPokeAlola.getWeight())) {
+					localPokeAlola.setWeight(localPoke.getWeight());
+				}
+				
 			localPokeList.add(localPokeAlola);
 			variantPokeList.add(localPokeAlola);
 			}
@@ -1314,8 +1513,23 @@ public class DatabasePrep {
 				if(Objects.isNull(localPokeGalar.getEggGroups())){
 					localPokeGalar.setEggGroups(localPoke.getEggGroups());
 				}
+				if(localPokeGalar.getEggSteps() == 0){
+					localPokeGalar.setEggSteps(localPoke.getEggSteps());
+				}
 				if(localPokeGalar.getCapRate() != localPoke.getCapRate()) {
 					localPokeGalar.setCapRate(localPoke.getCapRate());
+				}
+				if(localPokeGalar.getEvRewardAmt()  == 0) {
+					localPokeGalar.setEvRewardAmt(localPoke.getEvRewardAmt());
+				}
+				if(Objects.isNull(localPokeGalar.getEvRewardAttr())) {
+					localPokeGalar.setEvRewardAttr(localPoke.getEvRewardAttr());
+				}
+				if(Objects.isNull(localPokeGalar.getHeight())) {
+					localPokeGalar.setHeight(localPoke.getHeight());
+				}
+				if(Objects.isNull(localPokeGalar.getWeight())) {
+					localPokeGalar.setWeight(localPoke.getWeight());
 				}
 				localPokeList.add(localPokeGalar);
 				variantPokeList.add(localPokeGalar);
@@ -1324,8 +1538,23 @@ public class DatabasePrep {
 				if(Objects.isNull(localPokeHisui.getEggGroups())) {
 					localPokeHisui.setEggGroups(localPoke.getEggGroups());
 				}
+				if(localPokeHisui.getEggSteps() == 0){
+					localPokeHisui.setEggSteps(localPoke.getEggSteps());
+				}
 				if(localPokeHisui.getCapRate() != localPoke.getCapRate()) {
 					localPokeHisui.setCapRate(localPoke.getCapRate());
+				}
+				if(localPokeHisui.getEvRewardAmt()  == 0) {
+					localPokeHisui.setEvRewardAmt(localPoke.getEvRewardAmt());
+				}
+				if(Objects.isNull(localPokeHisui.getEvRewardAttr())) {
+					localPokeHisui.setEvRewardAttr(localPoke.getEvRewardAttr());
+				}
+				if(Objects.isNull(localPokeHisui.getHeight())) {
+					localPokeHisui.setHeight(localPoke.getHeight());
+				}
+				if(Objects.isNull(localPokeHisui.getWeight())) {
+					localPokeHisui.setWeight(localPoke.getWeight());
 				}
 				localPokeList.add(localPokeHisui);
 				variantPokeList.add(localPokeHisui);
@@ -1334,8 +1563,23 @@ public class DatabasePrep {
 				if(Objects.isNull(localPokePaldea.getEggGroups())) {
 					localPokePaldea.setEggGroups(localPoke.getEggGroups());
 				}
+				if(localPokePaldea.getEggSteps() == 0){
+					localPokePaldea.setEggSteps(localPoke.getEggSteps());
+				}
 				if(localPokePaldea.getCapRate() != localPoke.getCapRate()) {
 					localPokePaldea.setCapRate(localPoke.getCapRate());
+				}
+				if(localPokePaldea.getEvRewardAmt()  == 0) {
+					localPokePaldea.setEvRewardAmt(localPoke.getEvRewardAmt());
+				}
+				if(Objects.isNull(localPokePaldea.getEvRewardAttr())) {
+					localPokePaldea.setEvRewardAttr(localPoke.getEvRewardAttr());
+				}
+				if(Objects.isNull(localPokePaldea.getHeight())) {
+					localPokePaldea.setHeight(localPoke.getHeight());
+				}
+				if(Objects.isNull(localPokePaldea.getWeight())) {
+					localPokePaldea.setWeight(localPoke.getWeight());
 				}
 				localPokeList.add(localPokePaldea);
 				variantPokeList.add(localPokePaldea);
@@ -1344,8 +1588,29 @@ public class DatabasePrep {
 				if(Objects.isNull(localPokeOther1.getEggGroups())) {
 					localPokeOther1.setEggGroups(localPoke.getEggGroups());
 				}
+				if(localPokeOther1.getEggSteps() == 0){
+					localPokeOther1.setEggSteps(localPoke.getEggSteps());
+				}
 				if(localPokeOther1.getCapRate() != localPoke.getCapRate()) {
 					localPokeOther1.setCapRate(localPoke.getCapRate());
+				}
+				if(localPokeOther1.getEvRewardAmt() == 0) {
+					localPokeOther1.setEvRewardAmt(localPoke.getEvRewardAmt());
+				}
+				if(Objects.isNull(localPokeOther1.getEvRewardAttr())) {
+					localPokeOther1.setEvRewardAttr(localPoke.getEvRewardAttr());
+				}
+				if(localPokeOther1.getPokeTypes().equals(localPoke.getPokeTypes())) {
+					localPokeOther1.setWeaknesses(localPoke.getWeaknesses());
+					localPokeOther1.setImmunities(localPoke.getImmunities());
+					localPokeOther1.setNeutrals(localPoke.getNeutrals());
+					localPokeOther1.setResistances(localPoke.getResistances());
+				}
+				if(Objects.isNull(localPokeOther1.getHeight())) {
+					localPokeOther1.setHeight(localPoke.getHeight());
+				}
+				if(Objects.isNull(localPokeOther1.getWeight())) {
+					localPokeOther1.setWeight(localPoke.getWeight());
 				}
 				localPokeList.add(localPokeOther1);
 				variantPokeList.add(localPokeOther1);
@@ -1354,8 +1619,29 @@ public class DatabasePrep {
 				if(Objects.isNull(localPokeOther2.getEggGroups())) {
 					localPokeOther2.setEggGroups(localPoke.getEggGroups());
 				}
+				if(localPokeOther2.getEggSteps() == 0){
+					localPokeOther2.setEggSteps(localPoke.getEggSteps());
+				}
 				if(localPokeOther2.getCapRate() != localPoke.getCapRate()) {
 					localPokeOther2.setCapRate(localPoke.getCapRate());
+				}
+				if(localPokeOther2.getEvRewardAmt() == 0) {
+					localPokeOther2.setEvRewardAmt(localPoke.getEvRewardAmt());
+				}
+				if(Objects.isNull(localPokeOther2.getEvRewardAttr())) {
+					localPokeOther2.setEvRewardAttr(localPoke.getEvRewardAttr());
+				}
+				if(localPokeOther2.getPokeTypes().equals(localPoke.getPokeTypes())) {
+					localPokeOther2.setWeaknesses(localPoke.getWeaknesses());
+					localPokeOther2.setImmunities(localPoke.getImmunities());
+					localPokeOther2.setNeutrals(localPoke.getNeutrals());
+					localPokeOther2.setResistances(localPoke.getResistances());
+				}
+				if(Objects.isNull(localPokeOther2.getHeight())) {
+					localPokeOther2.setHeight(localPoke.getHeight());
+				}
+				if(Objects.isNull(localPokeOther2.getWeight())) {
+					localPokeOther2.setWeight(localPoke.getWeight());
 				}
 				localPokeList.add(localPokeOther2);
 				variantPokeList.add(localPokeOther2);
@@ -1364,8 +1650,29 @@ public class DatabasePrep {
 				if(Objects.isNull(localPokeOther3.getEggGroups())) {
 					localPokeOther3.setEggGroups(localPoke.getEggGroups());
 				}
+				if(localPokeOther3.getEggSteps() == 0){
+					localPokeOther3.setEggSteps(localPoke.getEggSteps());
+				}
 				if(localPokeOther3.getCapRate() != localPoke.getCapRate()) {
 					localPokeOther3.setCapRate(localPoke.getCapRate());
+				}
+				if(localPokeOther3.getEvRewardAmt() != localPoke.getEvRewardAmt()) {
+					localPokeOther3.setEvRewardAmt(localPoke.getEvRewardAmt());
+				}
+				if(Objects.isNull(localPokeOther3.getEvRewardAttr())) {
+					localPokeOther3.setEvRewardAttr(localPoke.getEvRewardAttr());
+				}
+				if(localPokeOther3.getPokeTypes().equals(localPoke.getPokeTypes())) {
+					localPokeOther3.setWeaknesses(localPoke.getWeaknesses());
+					localPokeOther3.setImmunities(localPoke.getImmunities());
+					localPokeOther3.setNeutrals(localPoke.getNeutrals());
+					localPokeOther3.setResistances(localPoke.getResistances());
+				}
+				if(Objects.isNull(localPokeOther3.getHeight())) {
+					localPokeOther3.setHeight(localPoke.getHeight());
+				}
+				if(Objects.isNull(localPokeOther3.getWeight())) {
+					localPokeOther3.setWeight(localPoke.getWeight());
 				}
 				localPokeList.add(localPokeOther3);
 				variantPokeList.add(localPokeOther3);
@@ -1374,8 +1681,29 @@ public class DatabasePrep {
 				if(Objects.isNull(localPokeOther4.getEggGroups())) {
 					localPokeOther4.setEggGroups(localPoke.getEggGroups());
 				}
+				if(localPokeOther4.getEggSteps() == 0){
+					localPokeOther4.setEggSteps(localPoke.getEggSteps());
+				}
 				if(localPokeOther4.getCapRate() != localPoke.getCapRate()) {
 					localPokeOther4.setCapRate(localPoke.getCapRate());
+				}
+				if(localPokeOther4.getEvRewardAmt() == 0) {
+					localPokeOther4.setEvRewardAmt(localPoke.getEvRewardAmt());
+				}
+				if(Objects.isNull(localPokeOther4.getEvRewardAttr())) {
+					localPokeOther4.setEvRewardAttr(localPoke.getEvRewardAttr());
+				}
+				if(localPokeOther4.getPokeTypes().equals(localPoke.getPokeTypes())) {
+					localPokeOther4.setWeaknesses(localPoke.getWeaknesses());
+					localPokeOther4.setImmunities(localPoke.getImmunities());
+					localPokeOther4.setNeutrals(localPoke.getNeutrals());
+					localPokeOther4.setResistances(localPoke.getResistances());
+				}
+				if(Objects.isNull(localPokeOther4.getHeight())) {
+					localPokeOther4.setHeight(localPoke.getHeight());
+				}
+				if(Objects.isNull(localPokeOther4.getWeight())) {
+					localPokeOther4.setWeight(localPoke.getWeight());
 				}
 				localPokeList.add(localPokeOther4);
 				variantPokeList.add(localPokeOther4);
@@ -1384,8 +1712,29 @@ public class DatabasePrep {
 				if(Objects.isNull(localPokeOther5.getEggGroups())) {
 					localPokeOther5.setEggGroups(localPoke.getEggGroups());
 				}
+				if(localPokeOther5.getEggSteps() == 0){
+					localPokeOther5.setEggSteps(localPoke.getEggSteps());
+				}
 				if(localPokeOther5.getCapRate() != localPoke.getCapRate()) {
 					localPokeOther5.setCapRate(localPoke.getCapRate());
+				}
+				if(localPokeOther5.getEvRewardAmt() == 0) {
+					localPokeOther5.setEvRewardAmt(localPoke.getEvRewardAmt());
+				}
+				if(Objects.isNull(localPokeOther5.getEvRewardAttr())) {
+					localPokeOther5.setEvRewardAttr(localPoke.getEvRewardAttr());
+				}
+				if(localPokeOther5.getPokeTypes().equals(localPoke.getPokeTypes())) {
+					localPokeOther5.setWeaknesses(localPoke.getWeaknesses());
+					localPokeOther5.setImmunities(localPoke.getImmunities());
+					localPokeOther5.setNeutrals(localPoke.getNeutrals());
+					localPokeOther5.setResistances(localPoke.getResistances());
+				}
+				if(Objects.isNull(localPokeOther5.getHeight())) {
+					localPokeOther5.setHeight(localPoke.getHeight());
+				}
+				if(Objects.isNull(localPokeOther5.getWeight())) {
+					localPokeOther5.setWeight(localPoke.getWeight());
 				}
 				localPokeList.add(localPokeOther5);
 				variantPokeList.add(localPokeOther5);

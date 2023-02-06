@@ -1,10 +1,32 @@
 Back-End: Improve data processing for the regional and alternate forms.
 
 Regional Forms need support for - 
-Base Stats, Cap Rate, Egg Steps, EVs, Movelists (aside from level-up)
+Type Effectiveness, Movelists (aside from level-up, so: Egg Moves, Other Moves, TM Moves)
+
+Stat Total Support Missing for -
+Greninja - Ability Variant
+Rockruff - Ability Variant
+Lycanroc - Ability Variant
+Toxtricity - Ability Variant
+Indeedee - Ability Variant
+Oinkologne - Ability Variant
+Squawkabilly - Ability Variant
+Oricorio - Sensu Style
+Zacian - Crowned Sword
+Zamazenta - Crowned Shield
+Meloetta - Pirouette Forme
+Hoopa Unbound
+Oricorio - Pom-Pom Style
+Oricorio - Pa'u Style
+Urshifu - Rapid Strike Style
+Calyrex - Ice Rider
+Calyrex - Shadow Rider
+
+Other Variant Forms need support for:
+Level Moves, Base Stats, 
 
 Abilities support has improved dramatically, but a few slipped through the cracks:
-Ice Rider Calyrex and Shadow Rider Calyrex.
+Squawkabilly, Calyrex (and alternates), Basculin, and Lycanroc have dysfunctional ability sets.
 
 Classifications support has improved dramatically, but a few slipped through the cracks:
 Calyrex (and alternates), Meowth (and alternates).
